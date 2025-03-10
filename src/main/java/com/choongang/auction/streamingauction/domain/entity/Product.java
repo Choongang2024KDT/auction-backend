@@ -1,4 +1,4 @@
-package com.choongang.auction.streamingauction.entity;
+package com.choongang.auction.streamingauction.domain.entity;
 
 
 import jakarta.persistence.*;

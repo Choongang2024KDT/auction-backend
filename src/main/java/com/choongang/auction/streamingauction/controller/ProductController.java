@@ -1,7 +1,6 @@
 package com.choongang.auction.streamingauction.controller;
 
-import com.choongang.auction.streamingauction.entity.Product;
-import com.choongang.auction.streamingauction.entity.dto.ProductCreate;
+import com.choongang.auction.streamingauction.domain.dto.ProductCreate;
 import com.choongang.auction.streamingauction.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

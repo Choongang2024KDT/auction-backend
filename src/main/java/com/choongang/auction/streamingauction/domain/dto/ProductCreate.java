@@ -1,8 +1,7 @@
-package com.choongang.auction.streamingauction.entity.dto;
+package com.choongang.auction.streamingauction.domain.dto;
 
 
-import com.choongang.auction.streamingauction.entity.Product;
-import java.time.LocalDateTime;
+import com.choongang.auction.streamingauction.domain.entity.Product;
 
 //상품 등록시 사용할 DTO
 public record ProductCreate(
@@ -18,7 +17,6 @@ public record ProductCreate(
                 .description(this.productDescription)
                 .category(this.productCategory)
                 .imageUrl(this.productImageUrl)
-//                .createdAt(LocalDateTime.now())
                 .build();
     }
 
