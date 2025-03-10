@@ -5,8 +5,11 @@ import com.choongang.auction.streamingauction.domain.dto.ProductCreate;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -28,6 +31,12 @@ public class ProductService {
                 .build();
 
         productRepository.save(productEntity);
+    }
+
+    //상품 조회
+    public Product findProduct (Long id) {
+        Product product = productRepository.findById(id).orElseThrow(); //null값 처리
+        return product;
     }
 
 }

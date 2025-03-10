@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "product_id")  // 컬럼명: product_id (PK)
+    @Column(name = "id")  // 컬럼명: product_id (PK)
     private Long productId;
 
     @Column(name = "product_name", nullable = false)  // 컬럼명: product_name
