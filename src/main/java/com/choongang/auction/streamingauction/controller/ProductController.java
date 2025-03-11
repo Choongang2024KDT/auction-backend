@@ -48,15 +48,7 @@ public class ProductController {
 
         List<String> imageUrls = new ArrayList<>();
 
-        // 업로드 디렉토리 생성
-        try {
-            createUploadDirectoryIfNeeded();
-        } catch (IOException e) {
-            log.error("업로드 디렉토리 생성 실패", e);
-            return ResponseEntity.internalServerError().body(Map.of(
-                    "message", "파일 저장 경로를 생성할 수 없습니다."
-            ));
-        }
+
 
         // 파일 업로드 처리
         if (files != null && files.length > 0) {
@@ -166,12 +158,6 @@ public class ProductController {
         }
     }
 
-    // 업로드 디렉토리 생성
-    private void createUploadDirectoryIfNeeded() throws IOException {
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-            log.info("업로드 디렉토리 생성: {}", uploadPath.toAbsolutePath());
-        }
-    }
+
+
 }
