@@ -1,4 +1,4 @@
-package com.choongang.auction.streamingauction.product.domain.entity;
+package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
