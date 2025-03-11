@@ -23,9 +23,9 @@ public class BidController {
     //입찰 기능
     @PostMapping("/tender")
     public ResponseEntity<?> saveBid(
-            @RequestBody BidRequestDto dto
+            @RequestBody BidRequestDto bidRequestDto
             ) {
-        bidService.saveBid(dto);
+        bidService.saveBid(bidRequestDto);
         return ResponseEntity.ok().body(Map.of(
                "message", "입찰에 성공하셨습니다."
         ));
