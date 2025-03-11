@@ -1,4 +1,4 @@
-package com.choongang.auction.streamingauction.domain.dto;
+package com.choongang.auction.streamingauction.domain.dto.requestDto;
 
 
 import com.choongang.auction.streamingauction.domain.entity.Product;
