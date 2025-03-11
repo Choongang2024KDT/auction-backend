@@ -1,8 +1,8 @@
 package com.choongang.auction.streamingauction.controller;
 
-import com.choongang.auction.streamingauction.product.domain.dto.ProductCreate;
-import com.choongang.auction.streamingauction.product.domain.entity.Product;
-import com.choongang.auction.streamingauction.product.domain.entity.ProductImage;
+import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
+import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
+import com.choongang.auction.streamingauction.domain.product.domain.entity.ProductImage;
 import com.choongang.auction.streamingauction.service.ProductService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,9 +39,11 @@ public class ProductController {
             @RequestParam("productName") String productName,
             @RequestParam("productDescription") String productDescription,
             @RequestParam("productCategory") String productCategory,
+            @RequestParam("productPrice") Long productPrice,
             @RequestParam(value = "images", required = false) MultipartFile[] files) {
 
         log.info("상품 등록 요청: {}", productName);
+        log.info("카테고리: {}", productCategory);
         log.info("이미지 파일 개수: {}", files != null ? files.length : 0);
 
         List<String> imageUrls = new ArrayList<>();
@@ -89,6 +91,7 @@ public class ProductController {
                 productName,
                 productDescription,
                 productCategory,
+                productPrice,
                 firstImageUrl
         );
 
@@ -97,7 +100,8 @@ public class ProductController {
         return ResponseEntity.ok().body(Map.of(
                 "message", "상품이 등록되었습니다.",
                 "productId", savedProduct.getProductId(),
-                "imageUrls", imageUrls
+                "categoryId", savedProduct.getCategory().getCategoryId(),
+                "categoryType", savedProduct.getCategory().getCategorytype().name()
         ));
     }
 
@@ -116,6 +120,50 @@ public class ProductController {
                 "product", product,
                 "imageUrls", imageUrls
         ));
+    }
+
+    // 모든 상품 조회
+    @GetMapping("/all")
+    public ResponseEntity<?> getAllProducts() {
+        List<Product> products = productService.findAllProducts();
+        return ResponseEntity.ok().body(Map.of(
+                "message", "전체 상품 목록을 조회했습니다.",
+                "products", products,
+                "count", products.size()
+        ));
+    }
+
+    // 카테고리별 상품 조회
+    @GetMapping("/category/{categoryType}")
+    public ResponseEntity<?> getProductsByCategory(@PathVariable String categoryType) {
+        try {
+            List<Product> products = productService.findProductsByCategory(categoryType);
+            return ResponseEntity.ok().body(Map.of(
+                    "message", categoryType + " 카테고리의 상품 목록을 조회했습니다.",
+                    "products", products,
+                    "count", products.size()
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage()
+            ));
+        }
+    }
+
+    // 상품 삭제
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
+        try {
+            productService.deleteProduct(id);
+            return ResponseEntity.ok().body(Map.of(
+                    "message", "상품이 삭제되었습니다.",
+                    "productId", id
+            ));
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "message", e.getMessage()
+            ));
+        }
     }
 
     // 업로드 디렉토리 생성

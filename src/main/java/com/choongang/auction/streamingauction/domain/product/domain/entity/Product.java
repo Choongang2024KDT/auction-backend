@@ -1,5 +1,6 @@
-package com.choongang.auction.streamingauction.product.domain.entity;
+package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
+import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -31,8 +32,11 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    @Column(name = "product_category")
-    private String category;
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_id")
+    private Category category;
+
+    private Long price;
 
     @Builder.Default // Builder에서도 기본값 사용
     @JsonManagedReference // JSON 직렬화 설정
