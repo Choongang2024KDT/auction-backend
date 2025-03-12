@@ -19,6 +19,7 @@ public class AuctionService {
     //경매 데이터 저장
     public void createAuction(AuctionRequestDto auctionRequestDto) {
 
+        //Auction 객체 생성
         Auction auctionEntity = Auction.builder()
                 .productId(auctionRequestDto.productId())
                 .userId(auctionRequestDto.userId())
@@ -26,6 +27,8 @@ public class AuctionService {
                 .description(auctionRequestDto.description())
                 .startingPrice(auctionRequestDto.startingPrice())
                 .build();
+
+        //Chat객체 생성
 
         auctionRepository.save(auctionEntity);
     }

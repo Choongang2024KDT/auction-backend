@@ -28,12 +28,12 @@ public class Chat {
     @Column(name="user_id",nullable = false)
     private Long userId;
 
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "auction_id", nullable = false)
-//    private Auction auction;  // Auction 테이블과 연관된 외래키
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auction_id")
+    private Auction auction;  // Auction 테이블과 연관된 외래키 //하나의 경매는 여러개의 채팅내역을 가질 수 있다.
 
-    @Column(name="auction_id",nullable = false)
-    private Long auctionId;
+//    @Column(name="auction_id",nullable = false)
+//    private Long auctionId;
 
     @Column(name = "message", nullable = false)
     private String message;

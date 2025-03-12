@@ -56,4 +56,5 @@ public class Auction {
             this.status = Status.ONGOING;  // status가 null인 경우 기본값 설정
         }
     }
+
 }
