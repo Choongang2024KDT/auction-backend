@@ -43,12 +43,16 @@ public class ProductService {
         Product productEntity = Product.builder()
                 .name(dto.productName())
                 .description(dto.productDescription())
-                .startPrice(dto.productPrice())  // 가격 필드 추가
+                .startPrice(dto.productStartPrice())  // 가격 필드 추가
                 .bidIncrement(dto.productBidIncrement()) // 입찰 호가
                 .buyNowPrice(dto.productBuyNowPrice()) //즉시 입찰가
                 .category(category)  // 카테고리 설정
                 .images(new ArrayList<>())  // 빈 이미지 리스트로 초기화
                 .build();
+
+
+        // 즉시 입찰가가 초기 입찰 가격보다 작은경우
+
 
         // 이미지 URL이 있는 경우 ProductImage 엔티티 생성 및 연결
         if (imageUrls != null && !imageUrls.isEmpty()) {

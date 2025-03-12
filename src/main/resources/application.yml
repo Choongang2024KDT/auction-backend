@@ -38,7 +38,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MariaDB106Dialect
     hibernate:
-      ddl-auto: update  # 운영에서는 `create` 대신 `update` 또는 `none`
+      ddl-auto: create  # 운영에서는 `create` 대신 `update` 또는 `none`
     properties:
       hibernate:
         format_sql: true

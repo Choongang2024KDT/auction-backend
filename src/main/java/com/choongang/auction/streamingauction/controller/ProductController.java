@@ -31,7 +31,7 @@ public class ProductController {
             @RequestParam("productName") String productName,
             @RequestParam("productDescription") String productDescription,
             @RequestParam("productCategory") String productCategory,
-            @RequestParam("productStartPrice") Long productPrice,
+            @RequestParam("productStartPrice") Long productStartPrice,
             @RequestParam("productBidIncrease") Long productBidIncrease,
             @RequestParam("productBuyNowPrice") Long productBuyNowPrice,
             @RequestParam(value = "images", required = false) MultipartFile[] files) {
@@ -65,7 +65,7 @@ public class ProductController {
                 productName,
                 productDescription,
                 productCategory,
-                productPrice,
+                productStartPrice,
                 productBidIncrease,
                 productBuyNowPrice,
                 imageUrls.isEmpty() ? null : imageUrls.get(0)

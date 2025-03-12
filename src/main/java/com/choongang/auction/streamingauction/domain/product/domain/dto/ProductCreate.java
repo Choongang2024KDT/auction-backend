@@ -7,7 +7,7 @@ public record ProductCreate(
         String productName,
         String productDescription,
         String productCategory,  // 카테고리 타입 이름(String)
-        Long productPrice,
+        Long productStartPrice,
         Long productBidIncrement,
         Long productBuyNowPrice,
         String imageUrl // 이미지 URL을 문자열로 변경
@@ -17,7 +17,7 @@ public record ProductCreate(
         return Product.builder()
                 .name(this.productName())
                 .description(this.productDescription())
-                .startPrice(this.productPrice())
+                .startPrice(this.productStartPrice())
                 .bidIncrement(this.productBidIncrement())
                 .buyNowPrice(this.productBuyNowPrice())
                 .build();
