@@ -1,10 +1,12 @@
 package com.choongang.auction.streamingauction.service;
 
+import com.choongang.auction.streamingauction.domain.auctionboard.entity.AuctionBoard;
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.category.entity.CategoryType;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.ProductImage;
+import com.choongang.auction.streamingauction.repository.AuctionBoardRepository;
 import com.choongang.auction.streamingauction.repository.CategoryRepository;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
@@ -12,6 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,9 +26,10 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final AuctionBoardRepository auctionBoardRepository;
 
     /**
-     * 상품을 이미지와 함께 저장합니다.
+     * 상품을 이미지와 함께 저장하고 경매 게시판에 등록합니다.
      *
      * @param dto 상품 생성 DTO
      * @param imageUrls 이미지 URL 목록
@@ -39,20 +43,13 @@ public class ProductService {
         log.info("카테고리 조회 결과: ID={}, Type={}",
                 category.getCategoryId(), category.getCategorytype());
 
-        // 상품 엔티티 생성 (price 필드 추가)
+        // 상품 엔티티 생성 (가격 필드 없음)
         Product productEntity = Product.builder()
                 .name(dto.productName())
                 .description(dto.productDescription())
-                .startPrice(dto.productStartPrice())  // 가격 필드 추가
-                .bidIncrement(dto.productBidIncrement()) // 입찰 호가
-                .buyNowPrice(dto.productBuyNowPrice()) //즉시 입찰가
                 .category(category)  // 카테고리 설정
                 .images(new ArrayList<>())  // 빈 이미지 리스트로 초기화
                 .build();
-
-
-        // 즉시 입찰가가 초기 입찰 가격보다 작은경우
-
 
         // 이미지 URL이 있는 경우 ProductImage 엔티티 생성 및 연결
         if (imageUrls != null && !imageUrls.isEmpty()) {
@@ -69,7 +66,22 @@ public class ProductService {
             log.info("이미지 {} 개가 상품에 추가되었습니다.", imageUrls.size());
         }
 
+        // 상품 저장
         Product savedProduct = productRepository.save(productEntity);
+
+        // 경매 게시판 등록 (가격 정보는 AuctionBoard에 저장)
+        AuctionBoard auctionBoard = AuctionBoard.builder()
+                .product(savedProduct)
+                .name(dto.productName())
+                .content(dto.productDescription())
+                .price(BigDecimal.valueOf(dto.productStartPrice()))
+                .bidIncrease(BigDecimal.valueOf(dto.productBidIncrement()))
+                .buyNowPrice(BigDecimal.valueOf(dto.productBuyNowPrice()))
+                .imageUrl(imageUrls != null && !imageUrls.isEmpty() ? imageUrls.get(0) : null)
+                .build();
+
+        auctionBoardRepository.save(auctionBoard);
+
         log.info("저장된 상품: ID={}, 카테고리={}, 이미지 개수={}",
                 savedProduct.getProductId(),
                 savedProduct.getCategory().getCategorytype(),

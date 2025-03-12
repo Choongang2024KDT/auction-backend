@@ -36,15 +36,6 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    @Column(name = "start_price")
-    private Long startPrice;         // 초기 가격
-
-    @Column(name = "bid_increment")
-    private Long bidIncrement; //입찰 호가
-
-    @Column(name = "buy_now_price")
-    private Long buyNowPrice;
-
 
     @Builder.Default // Builder에서도 기본값 사용
     @JsonManagedReference // JSON 직렬화 설정
