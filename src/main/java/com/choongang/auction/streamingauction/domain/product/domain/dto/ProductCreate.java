@@ -8,6 +8,8 @@ public record ProductCreate(
         String productDescription,
         String productCategory,  // 카테고리 타입 이름(String)
         Long productPrice,
+        Long productBidIncrement,
+        Long productBuyNowPrice,
         String imageUrl // 이미지 URL을 문자열로 변경
 ) {
     // DTO를 엔터티로 변경하는 편의 메서드
@@ -15,7 +17,9 @@ public record ProductCreate(
         return Product.builder()
                 .name(this.productName())
                 .description(this.productDescription())
-                .price(this.productPrice())
+                .startPrice(this.productPrice())
+                .bidIncrement(this.productBidIncrement())
+                .buyNowPrice(this.productBuyNowPrice())
                 .build();
     }
 }

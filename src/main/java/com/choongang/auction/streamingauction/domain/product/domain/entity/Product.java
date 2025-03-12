@@ -36,7 +36,15 @@ public class Product {
     @JoinColumn(name = "category_id")
     private Category category;
 
-    private Long price;
+    @Column(name = "start_price")
+    private Long startPrice;         // 초기 가격
+
+    @Column(name = "bid_increment")
+    private Long bidIncrement; //입찰 호가
+
+    @Column(name = "buy_now_price")
+    private Long buyNowPrice;
+
 
     @Builder.Default // Builder에서도 기본값 사용
     @JsonManagedReference // JSON 직렬화 설정
@@ -51,11 +59,10 @@ public class Product {
     @Column(name = "product_updated_at")
     private LocalDateTime updatedAt;
 
-    // 이미지 추가 메서드
+
+
+    // 이미지 추가 헬퍼 메소드
     public void addImage(ProductImage image) {
-        if (images == null) {
-            images = new ArrayList<>();
-        }
         images.add(image);
         image.setProduct(this);
     }

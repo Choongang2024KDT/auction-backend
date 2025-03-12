@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -42,24 +43,26 @@ public class ProductService {
         Product productEntity = Product.builder()
                 .name(dto.productName())
                 .description(dto.productDescription())
-                .price(dto.productPrice())  // 가격 필드 추가
+                .startPrice(dto.productPrice())  // 가격 필드 추가
+                .bidIncrement(dto.productBidIncrement()) // 입찰 호가
+                .buyNowPrice(dto.productBuyNowPrice()) //즉시 입찰가
                 .category(category)  // 카테고리 설정
+                .images(new ArrayList<>())  // 빈 이미지 리스트로 초기화
                 .build();
 
-
-        // 이미지 URL 처리
+        // 이미지 URL이 있는 경우 ProductImage 엔티티 생성 및 연결
         if (imageUrls != null && !imageUrls.isEmpty()) {
             for (String imageUrl : imageUrls) {
-                if (imageUrl != null && !imageUrl.trim().isEmpty()) {
-                    ProductImage image = ProductImage.builder()
-                            .imageUrl(imageUrl)
-                            .product(productEntity)
-                            .build();
+                ProductImage productImage = ProductImage.builder()
+                        .imageUrl(imageUrl)
+                        .product(productEntity)
+                        .build();
 
-                    productEntity.addImage(image);
-                    log.info("이미지 추가: {}", imageUrl);
-                }
+                // Product 엔티티의 images 리스트에 추가
+                productEntity.getImages().add(productImage);
             }
+
+            log.info("이미지 {} 개가 상품에 추가되었습니다.", imageUrls.size());
         }
 
         Product savedProduct = productRepository.save(productEntity);
