@@ -19,7 +19,7 @@ import java.util.List;
 @Transactional
 public class ChatService {
 
-    private final SimpMessagingTemplate messagingTemplate;
+
     private final ChatRepository chatRepository;
     private final AuctionRepository auctionRepository;
 
@@ -29,6 +29,7 @@ public class ChatService {
         //해당 경매 찾기
         Auction foundAuction = auctionRepository.findById(dto.auctionId()).orElseThrow(() -> new RuntimeException("Auction not found"));
 
+        //채팅 내역 저장
         Chat chatEntity = Chat.builder()
                 .userId(dto.userId())
                 .auction(foundAuction)
@@ -36,9 +37,15 @@ public class ChatService {
                 .build();
         chatRepository.save(chatEntity);
 
+//        //채팅 내역 조회 - 채팅 시간 순
+//        List<Chat> getChat = chatRepository.findByAuctionIdOrderBySentAtAsc(foundAuction.getId());
+//
+//        return getChat;
+
+
         // 2. 저장한 메시지를 웹소켓을 통해 다른 클라이언트들에게 전달
         // WebSocket으로 채팅 메시지를 "/topic/chat/{auctionId}"로 전송
-        messagingTemplate.convertAndSend("/topic/chat/" + dto.auctionId(), chatEntity);
+//        messagingTemplate.convertAndSend("/topic/chat/" + dto.auctionId(), chatEntity);
     }
 
 
