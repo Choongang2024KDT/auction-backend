@@ -33,8 +33,8 @@ public class AuctionBoard {
     @Column(name = "content")
     private String content;
 
-    @Column(name = "price", precision = 10, scale = 2)
-    private BigDecimal price;
+    @Column(name = "start_price", precision = 10, scale = 2)
+    private BigDecimal startPrice;
 
     @Column(name = "bid_increase", precision = 10, scale = 2)
     private BigDecimal bidIncrease;

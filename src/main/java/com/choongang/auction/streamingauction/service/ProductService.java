@@ -74,7 +74,7 @@ public class ProductService {
                 .product(savedProduct)
                 .name(dto.productName())
                 .content(dto.productDescription())
-                .price(BigDecimal.valueOf(dto.productStartPrice()))
+                .startPrice(BigDecimal.valueOf(dto.productStartPrice()))
                 .bidIncrease(BigDecimal.valueOf(dto.productBidIncrement()))
                 .buyNowPrice(BigDecimal.valueOf(dto.productBuyNowPrice()))
                 .imageUrl(imageUrls != null && !imageUrls.isEmpty() ? imageUrls.get(0) : null)
