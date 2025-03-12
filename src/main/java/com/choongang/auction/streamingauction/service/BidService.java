@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.service;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.BidRequestDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.BidResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.domain.entity.Bid;
 import com.choongang.auction.streamingauction.repository.AuctionRepository;
@@ -35,8 +36,17 @@ public class BidService {
 
     //최고 입찰가 조회
     //최고 입찰가 null상태일때 예외처리 후 controller로 반환
-    public Bid getMaxBid() {
-        return bidRepository.findTopByOrderByBidAmountDesc()
-                .orElseThrow(()->new NoSuchElementException("No bids found"));
+    public BidResponseDto getMaxBid(Long auctionId) {
+
+        Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionId);
+
+        if (highestBid == null) {
+            return null;  // 최고가 입찰이 없다면 null 반환
+        }
+        // BidResponseDto record를 사용하여 생성
+        return new BidResponseDto(
+                highestBid.getUserId(),  // 사용자 ID
+                highestBid.getBidAmount()           // 입찰 금액
+        );
     }
 }

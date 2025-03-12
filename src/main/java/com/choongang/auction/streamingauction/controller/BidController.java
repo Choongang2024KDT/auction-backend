@@ -2,6 +2,7 @@ package com.choongang.auction.streamingauction.controller;
 
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.BidRequestDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.BidResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Bid;
 import com.choongang.auction.streamingauction.service.BidService;
 import lombok.RequiredArgsConstructor;
@@ -31,12 +32,15 @@ public class BidController {
         ));
     }
 
-    //현재 최고가 입찰금액과 유저의 id 조회 요청
-    @GetMapping("/maxBid")
-    public ResponseEntity<?> getMaxBid() {
+    //현재 경매id로 현재 최고가 입찰금액과 유저의 id 조회 요청
+    @GetMapping("/{auctionId}")
+    public ResponseEntity<?> getMaxBid(@PathVariable Long auctionId) {
         try {
-            Bid MaxBid = bidService.getMaxBid();  // 서비스에서 데이터를 받음
-            return ResponseEntity.ok(MaxBid); // 200 OK 응답
+            BidResponseDto MaxBid = bidService.getMaxBid(auctionId);// 서비스에서 데이터를 받음
+            return ResponseEntity.ok().body(Map.of(
+                    "message" , "해당 경매에 최고 입찰가입니다." ,
+                    "MaxBid" , MaxBid
+            )); // 200 OK 응답
         } catch (NoSuchElementException ex) {
             // 예외 처리 - 입찰이 없으면 404 응답
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
