@@ -23,10 +23,10 @@ public class Bid {
     private Long bidId;
 
     @Column(name = "user_id", nullable = false)  // 현재 입찰한 구매자의 id 추후에 User테이블과 매핑 필요
-    private String userId;
+    private Long userId;
 
     @Column(name = "auction_id")  // 어떤 경매방에서 진행된 입찰인지 구분 추후에 AuctionStream테이블과 매핑 필요
-    private String auctionId;
+    private Long auctionId;
 
     @Column(name = "bid_amount")  // 입찰가
     private Long bidAmount;
