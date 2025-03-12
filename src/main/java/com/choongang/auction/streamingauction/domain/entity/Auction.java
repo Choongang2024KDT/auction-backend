@@ -20,7 +20,7 @@ public class Auction {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "auction_id")
-    private Long auctionId;
+    private Long id;
 
     @Column(name = "product_id") //FK product 테이블
     private Long productId;
