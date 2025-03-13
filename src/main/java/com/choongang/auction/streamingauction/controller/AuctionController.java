@@ -1,16 +1,15 @@
 package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.AuctionRequestDto;
+import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.service.AuctionService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequiredArgsConstructor
@@ -28,6 +27,18 @@ public class AuctionController {
         auctionService.createAuction(auctionRequestDto);
         return ResponseEntity.ok().body(Map.of(
                 "message" , "경매가 시작되었습니다."
+        ));
+    }
+
+    //경매 조회 요청
+    @GetMapping("/{auctionId}")
+    public ResponseEntity<?> getAuctionInfo(
+            @PathVariable Long auctionId
+    ){
+        Optional<Auction> auctionInfo = auctionService.getAuctionInfo(auctionId);
+        return ResponseEntity.ok().body(Map.of(
+                "message", "경매 조회 요청에 성공했습니다.",
+                "getAuctionInfo" , auctionInfo
         ));
     }
 
