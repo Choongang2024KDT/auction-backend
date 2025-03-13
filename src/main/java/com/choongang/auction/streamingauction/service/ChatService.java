@@ -41,11 +41,6 @@ public class ChatService {
 //        List<Chat> getChat = chatRepository.findByAuctionIdOrderBySentAtAsc(foundAuction.getId());
 //
 //        return getChat;
-
-
-        // 2. 저장한 메시지를 웹소켓을 통해 다른 클라이언트들에게 전달
-        // WebSocket으로 채팅 메시지를 "/topic/chat/{auctionId}"로 전송
-//        messagingTemplate.convertAndSend("/topic/chat/" + dto.auctionId(), chatEntity);
     }
 
 

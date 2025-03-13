@@ -32,7 +32,7 @@ public class WebSocketChatController {
 
 
         // 채팅 메시지 처리 로직 (메시지 저장, 경매 채팅방에 전송 등)
-        chatService.saveAndSendMessage(chatRequestDto);//채팅내역 저장 후 클라이언트에게 내역 전송
+        chatService.saveAndSendMessage(chatRequestDto);//채팅내역 저장
         // 2. 저장한 메시지를 웹소켓을 통해 다른 클라이언트들에게 전달
         // WebSocket으로 채팅 메시지를 "/topic/chat"로 전송
         // 모든 클라이언트에게 전송
