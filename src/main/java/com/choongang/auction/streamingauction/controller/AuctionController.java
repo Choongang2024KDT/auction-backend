@@ -38,7 +38,7 @@ public class AuctionController {
         Optional<Auction> auctionInfo = auctionService.getAuctionInfo(auctionId);
         return ResponseEntity.ok().body(Map.of(
                 "message", "경매 조회 요청에 성공했습니다.",
-                "getAuctionInfo" , auctionInfo
+                "auctionInfo" , auctionInfo
         ));
     }
 
