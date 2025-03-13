@@ -8,6 +8,7 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Getter
+@Setter
 @ToString
 @NoArgsConstructor
 @AllArgsConstructor
@@ -48,7 +49,7 @@ public class Auction {
     private Long startingPrice;
 
     @Column(name = "current_price") // 현재가
-    private Long current_price;
+    private Long currentPrice;
 
     @PrePersist
     public void prePersist() {

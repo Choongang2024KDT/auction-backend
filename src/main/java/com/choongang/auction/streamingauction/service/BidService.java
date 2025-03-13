@@ -21,14 +21,16 @@ import java.util.Optional;
 @Transactional
 public class BidService {
 
-    private final SimpMessagingTemplate messagingTemplate;
     private final BidRepository bidRepository;
     private final AuctionRepository auctionRepository;
+    private final AuctionService auctionService;
 
     //입찰 저장 후 입찰내역 전송
     public Bid saveAndGetMaxBid(BidRequestDto bidRequestDto) {
         //입찰 저장
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
+
+        auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
 
         Bid bidEntity = Bid.builder()
                 .userId(bidRequestDto.userId())

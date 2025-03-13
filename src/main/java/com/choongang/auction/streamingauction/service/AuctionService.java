@@ -39,4 +39,14 @@ public class AuctionService {
     public Optional<Auction> getAuctionInfo(Long auctionId) {
         return auctionRepository.findById(auctionId);
     }
+
+    //경매 현재 진행가 업데이트
+    public void updateAuctionCurrentPrice(Long id , Long bidAmount) {
+        //업데이트할 경매를 조회
+        Optional<Auction> foundAuction = auctionRepository.findById(id);
+        Auction auctionEntity = foundAuction.get();
+        auctionEntity.setCurrentPrice(bidAmount); //currentPrice만 업데이트
+
+        auctionRepository.save(auctionEntity); // 현재가 업데이트
+    }
 }
