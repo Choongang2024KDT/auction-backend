@@ -26,7 +26,7 @@ public class BidService {
     private final AuctionRepository auctionRepository;
 
     //입찰 저장 후 입찰내역 전송
-    public void saveAndGetMaxBid(BidRequestDto bidRequestDto) {
+    public Bid saveAndGetMaxBid(BidRequestDto bidRequestDto) {
         //입찰 저장
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
 
@@ -39,9 +39,7 @@ public class BidService {
 
         //최고가 입찰내역 가져오기
         Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(bidRequestDto.auctionId());
-
-        // 실시간으로 웹소켓을 통해 다른 클라이언트들에게 최고 입찰가 전송
-        messagingTemplate.convertAndSend("/topic/bids/" + bidRequestDto.auctionId(), highestBid);
+        return highestBid;
 
     }
 

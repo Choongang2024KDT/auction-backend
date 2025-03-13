@@ -2,6 +2,7 @@ package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.BidRequestDto;
 import com.choongang.auction.streamingauction.domain.dto.responseDto.BidResponseDto;
+import com.choongang.auction.streamingauction.domain.entity.Bid;
 import com.choongang.auction.streamingauction.service.BidService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Slf4j
 public class WebSocketBidController {
 
+    private final SimpMessagingTemplate messagingTemplate;
     private final BidService bidService;
 
     // 웹소켓을 통해 최고 입찰가 전송
@@ -28,8 +30,11 @@ public class WebSocketBidController {
         log.info("Received message for auctionId: {}, ChatRequestDto: {}", auctionId, bidRequestDto);
 
         // 입찰 데이터 저장 후 최고 입찰가 조회
-        bidService.saveAndGetMaxBid(bidRequestDto);
+        Bid MaxBidInfo = bidService.saveAndGetMaxBid(bidRequestDto);
 
+        // WebSocket으로 입찰 정보를 "/topic/bid"로 전송
+        // 클라이언트에게 전송
+        messagingTemplate.convertAndSend("/topic/bid", MaxBidInfo);
     }
 }
 
