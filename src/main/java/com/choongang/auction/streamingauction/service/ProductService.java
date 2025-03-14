@@ -41,7 +41,7 @@ public class ProductService {
         // 카테고리 조회
         Category category = findCategoryByType(dto.productCategory());
         log.info("카테고리 조회 결과: ID={}, Type={}",
-                category.getCategoryId(), category.getCategorytype());
+                category.getCategoryId(), category.getCategoryType());
 
         // 상품 엔티티 생성 (가격 필드 없음)
         Product productEntity = Product.builder()
@@ -74,6 +74,7 @@ public class ProductService {
                 .product(savedProduct)
                 .name(dto.productName())
                 .content(dto.productDescription())
+                .categoryName(category.getCategoryType()) // Category 객체가 아닌 CategoryType enum 값을 저장
                 .startPrice(BigDecimal.valueOf(dto.productStartPrice()))
                 .bidIncrease(BigDecimal.valueOf(dto.productBidIncrement()))
                 .buyNowPrice(BigDecimal.valueOf(dto.productBuyNowPrice()))
@@ -84,7 +85,7 @@ public class ProductService {
 
         log.info("저장된 상품: ID={}, 카테고리={}, 이미지 개수={}",
                 savedProduct.getProductId(),
-                savedProduct.getCategory().getCategorytype(),
+                savedProduct.getCategory().getCategoryType(),
                 savedProduct.getImages().size());
 
         return savedProduct;
@@ -105,7 +106,7 @@ public class ProductService {
 
         log.info("상품 조회: ID={}, 카테고리={}, 이미지 개수={}",
                 product.getProductId(),
-                product.getCategory().getCategorytype(),
+                product.getCategory().getCategoryType(),
                 product.getImages().size());
 
         return product;
@@ -123,7 +124,7 @@ public class ProductService {
             CategoryType categoryType = CategoryType.valueOf(categoryTypeName.toUpperCase());
 
             // CategoryType에 해당하는 Category 엔티티 찾기 (수정된 메서드명 사용)
-            return categoryRepository.findByCategorytype(categoryType)
+            return categoryRepository.findByCategoryType(categoryType)
                     .orElseThrow(() -> new RuntimeException("카테고리를 찾을 수 없습니다: " + categoryTypeName));
         } catch (IllegalArgumentException e) {
             // 유효하지 않은 카테고리 타입인 경우

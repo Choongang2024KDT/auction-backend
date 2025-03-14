@@ -21,5 +21,5 @@ public class Category {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "category_name")
-    private CategoryType categorytype;
+    private CategoryType categoryType;
 }

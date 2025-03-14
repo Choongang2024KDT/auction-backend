@@ -77,7 +77,7 @@ public class ProductController {
                 "message", "상품이 등록되었습니다.",
                 "productId", savedProduct.getProductId(),
                 "categoryId", savedProduct.getCategory().getCategoryId(),
-                "categoryType", savedProduct.getCategory().getCategorytype().name(),
+                "categoryType", savedProduct.getCategory().getCategoryType().name(),
                 "imageUrls", imageUrls
         ));
     }
