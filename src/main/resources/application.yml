@@ -7,17 +7,17 @@ spring:
       max-file-size: 10MB      # 단일 파일의 최대 크기
       max-request-size: 10MB
   #  mail:
-#    host: smtp.naver.com
-#    port: 465
-#    username: ${MAIL_USERNAME}  # 환경 변수에서 불러오기
-#    password: ${MAIL_PASSWORD}  # 환경 변수에서 불러오기
-#    protocol: smtp
-#    properties:
-#      mail:
-#        smtp:
-#          auth: true
-#          ssl:
-#            enable: true
+  #    host: smtp.naver.com
+  #    port: 465
+  #    username: ${MAIL_USERNAME}  # 환경 변수에서 불러오기
+  #    password: ${MAIL_PASSWORD}  # 환경 변수에서 불러오기
+  #    protocol: smtp
+  #    properties:
+  #      mail:
+  #        smtp:
+  #          auth: true
+  #          ssl:
+  #            enable: true
 
   # database setting
   datasource:
@@ -25,24 +25,28 @@ spring:
     username: root
     password: mariadb
 
+  sql:
+    init:
+      mode: always
 
-#  cloud:
-#    aws:
-#      credentials:
-#        access-key: ${AWS_ACCESS_KEY}  # 환경 변수
-#        secret-key: ${AWS_SECRET_KEY}  # 환경 변수
-#      region:
-#        static: ap-northeast-2
-#      s3:
-#        bucket: ${AWS_S3_BUCKET}  # 환경 변수
+  #  cloud:
+  #    aws:
+  #      credentials:
+  #        access-key: ${AWS_ACCESS_KEY}  # 환경 변수
+  #        secret-key: ${AWS_SECRET_KEY}  # 환경 변수
+  #      region:
+  #        static: ap-northeast-2
+  #      s3:
+  #        bucket: ${AWS_S3_BUCKET}  # 환경 변수
   jpa:
     database-platform: org.hibernate.dialect.MariaDB106Dialect
     hibernate:
-      ddl-auto: create  # 운영에서는 `create` 대신 `update` 또는 `none`
+      ddl-auto: none  # 운영에서는 `create` 대신 `update` 또는 `none`
     properties:
       hibernate:
         format_sql: true
     database: mysql
+    defer-datasource-initialization: true  # sql data추가 yml
 
 # log level setting
 logging:

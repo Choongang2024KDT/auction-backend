@@ -20,6 +20,6 @@ public class Category {
     private Long categoryId;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "category_name")
+    @Column(name = "category_name", unique = true, nullable = false)
     private CategoryType categoryType;
 }
