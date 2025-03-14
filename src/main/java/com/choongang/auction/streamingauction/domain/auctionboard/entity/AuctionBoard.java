@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.domain.auctionboard.entity;
 
+import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -32,6 +33,10 @@ public class AuctionBoard {
 
     @Column(name = "content")
     private String content;
+
+    @OneToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "category_name")
+    private Category categoryName;
 
     @Column(name = "start_price", precision = 10, scale = 2)
     private BigDecimal startPrice;
