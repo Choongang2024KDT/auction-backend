@@ -24,7 +24,7 @@ public class WebSocketChatController {
     // 채팅 메시지 처리
     // "/auction/{auctionId}/chat" 경로로 채팅 메시지를 받음
     @MessageMapping("/{auctionId}/chat")
-    @SendTo("/topic/chat")
+    @SendTo("/topic/chat/{auctionId}")
     public void handleChat(@DestinationVariable Long auctionId , ChatRequestDto chatRequestDto) {
 
         // 메시지 로그 찍기
@@ -36,7 +36,7 @@ public class WebSocketChatController {
         // 2. 저장한 메시지를 웹소켓을 통해 다른 클라이언트들에게 전달
         // WebSocket으로 채팅 메시지를 "/topic/chat"로 전송
         // 모든 클라이언트에게 전송
-        messagingTemplate.convertAndSend("/topic/chat", chatRequestDto);
+        messagingTemplate.convertAndSend("/topic/chat/"  + auctionId , chatRequestDto);
 
     }
 

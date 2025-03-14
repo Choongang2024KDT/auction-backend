@@ -24,7 +24,7 @@ public class WebSocketBidController {
     // 입찰 데이터 처리
     // "/auction/{auctionId}/bid" 경로로 입찰 데이터 받음
     @MessageMapping("/{auctionId}/bid")
-    @SendTo("/topic/bid")
+    @SendTo("/topic/bid/{auctionId}")
     public void handleBid(@DestinationVariable Long auctionId , BidRequestDto bidRequestDto) {
         // 메시지 로그 찍기
         log.info("Received message for auctionId: {}, ChatRequestDto: {}", auctionId, bidRequestDto);
@@ -34,7 +34,7 @@ public class WebSocketBidController {
 
         // WebSocket으로 입찰 정보를 "/topic/bid"로 전송
         // 클라이언트에게 전송
-        messagingTemplate.convertAndSend("/topic/bid", MaxBidInfo);
+        messagingTemplate.convertAndSend("/topic/bid/"  + auctionId , MaxBidInfo);
     }
 }
 
