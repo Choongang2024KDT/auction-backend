@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,11 +32,11 @@ public class AuctionController {
     }
 
     //경매 조회 요청
-    @GetMapping("/{auctionId}")
+    @GetMapping("/{productId}")
     public ResponseEntity<?> getAuctionInfo(
-            @PathVariable Long auctionId
+            @PathVariable Long productId
     ){
-        Optional<Auction> auctionInfo = auctionService.getAuctionInfo(auctionId);
+        Optional<Auction> auctionInfo = auctionService.getAuctionInfo(productId);
         return ResponseEntity.ok().body(Map.of(
                 "message", "경매 조회 요청에 성공했습니다.",
                 "auctionInfo" , auctionInfo

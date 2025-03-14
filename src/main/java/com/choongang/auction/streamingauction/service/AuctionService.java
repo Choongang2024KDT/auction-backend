@@ -36,8 +36,8 @@ public class AuctionService {
     }
 
     //경매 정보 요청
-    public Optional<Auction> getAuctionInfo(Long auctionId) {
-        return auctionRepository.findById(auctionId);
+    public Optional<Auction> getAuctionInfo(Long productId) {
+        return auctionRepository.findByProductId(productId);
     }
 
     //경매 현재 진행가 업데이트
