@@ -20,7 +20,7 @@ public record ProductCreate(
                 .name(this.productName())
                 .description(this.productDescription())
                 // 가격 관련 필드 통합
-                .startPrice(BigDecimal.valueOf(this.productStartPrice()))
+                .startingPrice(BigDecimal.valueOf(this.productStartPrice()))
                 .bidIncrease(BigDecimal.valueOf(this.productBidIncrement()))
                 .buyNowPrice(BigDecimal.valueOf(this.productBuyNowPrice()))
                 .build();

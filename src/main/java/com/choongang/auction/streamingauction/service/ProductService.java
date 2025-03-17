@@ -59,7 +59,7 @@ public class ProductService {
                 .category(category)
                 .categoryName(category.getCategoryType().name()) // 카테고리명 직접 설정
                 .member(member)
-                .startPrice(BigDecimal.valueOf(dto.productStartPrice()))
+                .startingPrice(BigDecimal.valueOf(dto.productStartPrice()))
                 .bidIncrease(BigDecimal.valueOf(dto.productBidIncrement()))
                 .buyNowPrice(BigDecimal.valueOf(dto.productBuyNowPrice()))
                 .images(new ArrayList<>())

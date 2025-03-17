@@ -36,7 +36,7 @@ public class ProductController {
             @RequestParam("productName") String productName,
             @RequestParam("productDescription") String productDescription,
             @RequestParam("productCategory") String productCategory,
-            @RequestParam("productStartPrice") Long productStartPrice,
+            @RequestParam("productStartingPrice") Long productStartingPrice,
             @RequestParam("productBidIncrease") Long productBidIncrease,
             @RequestParam("productBuyNowPrice") Long productBuyNowPrice,
             @RequestParam(value = "images", required = false) MultipartFile[] files,
@@ -49,7 +49,7 @@ public class ProductController {
         log.info("상품 등록 요청: {}, 회원: {}", productName, username);
         log.info("카테고리: {}", productCategory);
         log.info("가격 정보: 시작가={}, 입찰단위={}, 즉시구매가={}",
-                productStartPrice, productBidIncrease, productBuyNowPrice);
+                productStartingPrice, productBidIncrease, productBuyNowPrice);
         log.info("이미지 파일 개수: {}", files != null ? files.length : 0);
 
         List<String> imageUrls = new ArrayList<>();
@@ -77,7 +77,7 @@ public class ProductController {
                 productName,
                 productDescription,
                 productCategory,
-                productStartPrice,
+                productStartingPrice,
                 productBidIncrease,
                 productBuyNowPrice,
                 imageUrls.isEmpty() ? null : imageUrls.get(0)
@@ -228,7 +228,7 @@ public class ProductController {
                 .productId(product.getProductId())
                 .name(product.getName())
                 .description(product.getDescription())
-                .startPrice(product.getStartPrice())
+                .startingPrice(product.getStartingPrice())
                 .bidIncrease(product.getBidIncrease())
                 .buyNowPrice(product.getBuyNowPrice())
                 .categoryType(product.getCategory().getCategoryType().name())

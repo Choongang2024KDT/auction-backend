@@ -35,8 +35,8 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    @Column(name = "start_price", precision = 10, scale = 2)
-    private BigDecimal startPrice;
+    @Column(name = "starting_price", precision = 10, scale = 2)
+    private BigDecimal startingPrice;
 
     @Column(name = "bid_increase", precision = 10, scale = 2)
     private BigDecimal bidIncrease;

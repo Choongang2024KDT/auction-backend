@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.domain.entity;
 
+import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.extern.slf4j.Slf4j;
@@ -23,17 +24,21 @@ public class Auction {
     @Column(name = "auction_id")
     private Long id;
 
-    @Column(name = "product_id") //FK product 테이블
-    private Long productId;
+    @ManyToOne
+    @JoinColumn(name = "product_id")
+    private Product product;  // 경매가 연결된 상품
+
+//    @Column(name = "product_id") //FK product 테이블
+//    private Long productId;
 
     @Column(name = "user_id") //경매 주최자(판매자) FK user 테이블
     private Long userId;
 
-    @Column(name = "title") //경매 제목
-    private String title;
+//    @Column(name = "title") //경매 제목
+//    private String title;
 
-    @Column(name = "description") //경매 설명 ex)상품 설명
-    private String description;
+//    @Column(name = "description") //경매 설명 ex)상품 설명
+//    private String description;
 
     @CreationTimestamp //시작 시간
     @Column(name = "start_time")
@@ -45,8 +50,8 @@ public class Auction {
     @Enumerated(EnumType.STRING)  // Enum을 문자열로 저장
     private Status status ; //초기값 ONGOING
 
-    @Column(name = "starting_price") //경매 시작가
-    private Long startingPrice;
+//    @Column(name = "starting_price") //경매 시작가
+//    private Long startingPrice;
 
     @Column(name = "current_price") // 현재가
     private Long currentPrice;

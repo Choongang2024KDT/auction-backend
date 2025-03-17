@@ -9,5 +9,6 @@ import java.util.Optional;
 public interface AuctionRepository extends JpaRepository<Auction,Long> {
 
     // Auction 엔티티에서 productId로 조회
-    Optional<Auction> findByProductId(Long productId);
+    // 수정된 메소드 이름
+    Optional<Auction> findByProduct_ProductId(Long productId);
 }

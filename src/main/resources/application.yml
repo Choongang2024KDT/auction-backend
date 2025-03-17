@@ -2,6 +2,10 @@ server:
   port: 8088
 
 spring:
+  sql:
+    init:
+      mode: always
+      continue-on-error: true
   servlet:
     multipart:
       max-file-size: 10MB      # 단일 파일의 최대 크기
