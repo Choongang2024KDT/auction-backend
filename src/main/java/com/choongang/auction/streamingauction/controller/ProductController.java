@@ -232,6 +232,7 @@ public class ProductController {
                 .bidIncrease(product.getBidIncrease())
                 .buyNowPrice(product.getBuyNowPrice())
                 .categoryType(product.getCategory().getCategoryType().name())
+                .memberId(product.getMember() != null ? product.getMember().getId() : null)
                 .sellerUsername(product.getMember() != null ? product.getMember().getUsername() : null)
                 .imageUrls(imageUrls)
                 .createdAt(product.getCreatedAt())
