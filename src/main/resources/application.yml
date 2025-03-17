@@ -25,12 +25,7 @@ spring:
     username: root
     password: mariadb
 
-<<<<<<< HEAD
-=======
-  sql:
-    init:
-      mode: always
->>>>>>> 3a0e73438137e3b64d6b1c1ea5ed622341a85564
+
 
   #  cloud:
   #    aws:
@@ -44,11 +39,7 @@ spring:
   jpa:
     database-platform: org.hibernate.dialect.MariaDB106Dialect
     hibernate:
-<<<<<<< HEAD
       ddl-auto: create  # 운영에서는 `create` 대신 `update` 또는 `none`
-=======
-      ddl-auto: none  # 운영에서는 `create` 대신 `update` 또는 `none`
->>>>>>> 3a0e73438137e3b64d6b1c1ea5ed622341a85564
     properties:
       hibernate:
         format_sql: true
