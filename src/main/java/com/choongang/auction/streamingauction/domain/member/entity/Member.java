@@ -1,6 +1,5 @@
 package com.choongang.auction.streamingauction.domain.member.entity;
 
-
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import jakarta.persistence.*;
 import lombok.*;
@@ -10,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(
@@ -39,7 +37,6 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String name;
 
-
     @Column(nullable = false, length = 20)
     private String role = "ROLE_USER";
 
@@ -60,15 +57,15 @@ public class Member {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
-
     @Builder
     private Member(String username, String password, String email,
-                    String name) {
+                   String name) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.name = name;
     }
+
     // 상품 추가 메소드
     public void addProduct(Product product) {
         this.products.add(product);

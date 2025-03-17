@@ -4,8 +4,10 @@ import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.category.entity.CategoryType;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
+import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductDTO;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.ProductImage;
+import com.choongang.auction.streamingauction.domain.product.mapper.ProductMapper;
 import com.choongang.auction.streamingauction.repository.CategoryRepository;
 import com.choongang.auction.streamingauction.repository.MemberRepository;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
@@ -14,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +29,7 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final MemberRepository memberRepository;
+    private final ProductMapper productMapper; // ProductMapper 주입
 
     /**
      * 상품을 이미지와 함께 저장합니다.
@@ -34,9 +37,9 @@ public class ProductService {
      * @param dto 상품 생성 DTO
      * @param imageUrls 이미지 URL 목록
      * @param username 로그인한 회원의 사용자명
-     * @return 저장된 상품 엔티티
+     * @return 저장된 상품 정보를 담은 DTO
      */
-    public Product saveProductWithImages(ProductCreate dto, List<String> imageUrls, String username) {
+    public ProductDTO saveProductWithImages(ProductCreate dto, List<String> imageUrls, String username) {
         log.info("상품 등록 시작: {}, 이미지 개수: {}, 회원: {}",
                 dto.productName(),
                 imageUrls != null ? imageUrls.size() : 0,
@@ -59,9 +62,9 @@ public class ProductService {
                 .category(category)
                 .categoryName(category.getCategoryType().name()) // 카테고리명 직접 설정
                 .member(member)
-                .startingPrice(Long.valueOf(dto.productStartPrice()))
-                .bidIncrease(Long.valueOf(dto.productBidIncrement()))
-                .buyNowPrice(Long.valueOf(dto.productBuyNowPrice()))
+                .startingPrice(dto.productStartingPrice())
+                .bidIncrease(dto.productBidIncrease())
+                .buyNowPrice(dto.productBuyNowPrice())
                 .images(new ArrayList<>())
                 .build();
 
@@ -89,17 +92,18 @@ public class ProductService {
                 savedProduct.getImages().size(),
                 savedProduct.getMember().getUsername());
 
-        return savedProduct;
+        // ProductMapper를 사용하여 DTO 변환
+        return productMapper.toDto(savedProduct);
     }
 
     /**
      * ID로 상품을 조회합니다.
      *
      * @param id 상품 ID
-     * @return 조회된 상품 엔티티
+     * @return 조회된 상품 정보를 담은 DTO
      */
     @Transactional(readOnly = true)
-    public Product findProduct(Long id) {
+    public ProductDTO findProduct(Long id) {
         // 이미지를 함께 조회하는 쿼리 사용
         Product product = productRepository.findByIdWithImages(id)
                 .orElseGet(() -> productRepository.findById(id)
@@ -110,7 +114,8 @@ public class ProductService {
                 product.getCategory().getCategoryType(),
                 product.getImages().size());
 
-        return product;
+        // ProductMapper를 사용하여 DTO 변환
+        return productMapper.toDto(product);
     }
 
     /**
@@ -136,34 +141,37 @@ public class ProductService {
     /**
      * 모든 상품을 조회합니다.
      *
-     * @return 상품 엔티티 목록
+     * @return 상품 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<Product> findAllProducts() {
-        return productRepository.findAll();
+    public List<ProductDTO> findAllProducts() {
+        // ProductMapper를 사용하여 DTO 목록 변환
+        return productMapper.toDtoList(productRepository.findAll());
     }
 
     /**
      * 카테고리별 상품을 조회합니다.
      *
      * @param categoryType 카테고리 타입
-     * @return 해당 카테고리의 상품 목록
+     * @return 해당 카테고리의 상품 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<Product> findProductsByCategory(String categoryType) {
+    public List<ProductDTO> findProductsByCategory(String categoryType) {
         Category category = findCategoryByType(categoryType);
-        return productRepository.findByCategory(category);
+        // ProductMapper를 사용하여 DTO 목록 변환
+        return productMapper.toDtoList(productRepository.findByCategory(category));
     }
 
     /**
      * 회원별 상품을 조회합니다.
      *
      * @param username 회원 사용자명
-     * @return 해당 회원이 등록한 상품 목록
+     * @return 해당 회원이 등록한 상품 DTO 목록
      */
     @Transactional(readOnly = true)
-    public List<Product> findProductsByMember(String username) {
-        return productRepository.findByMemberUsername(username);
+    public List<ProductDTO> findProductsByMember(String username) {
+        // ProductMapper를 사용하여 DTO 목록 변환
+        return productMapper.toDtoList(productRepository.findByMemberUsername(username));
     }
 
     /**

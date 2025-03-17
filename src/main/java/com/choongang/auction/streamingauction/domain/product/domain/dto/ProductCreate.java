@@ -1,15 +1,14 @@
 package com.choongang.auction.streamingauction.domain.product.domain.dto;
 
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
-import java.math.BigDecimal;
 
 // 상품 등록시 사용할 DTO
 public record ProductCreate(
         String productName,
         String productDescription,
         String productCategory,  // 카테고리 타입 이름(String)
-        Long productStartPrice,  // 시작가
-        Long productBidIncrement, // 입찰 단위
+        Long productStartingPrice,  // 시작가
+        Long productBidIncrease, // 입찰 단위
         Long productBuyNowPrice,  // 즉시구매가
         String imageUrl // 이미지 URL
 ) {
@@ -20,9 +19,9 @@ public record ProductCreate(
                 .name(this.productName())
                 .description(this.productDescription())
                 // 가격 관련 필드 통합
-                .startingPrice(Long.valueOf(this.productStartPrice()))
-                .bidIncrease(Long.valueOf(this.productBidIncrement()))
-                .buyNowPrice(Long.valueOf(this.productBuyNowPrice()))
+                .startingPrice(this.productStartingPrice())
+                .bidIncrease(this.productBidIncrease())
+                .buyNowPrice(this.productBuyNowPrice())
                 .build();
     }
 }
