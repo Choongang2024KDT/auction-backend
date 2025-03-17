@@ -18,10 +18,10 @@ import java.util.List;
 @Table(name = "product")
 @Getter
 @Setter
-@ToString(exclude = {"images", "member"}) // 순환 참조 방지
+@ToString(exclude = {"images", "member","category"}) // 순환 참조 방지
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"images", "member"}) // 순환 참조 방지
+@EqualsAndHashCode(exclude = {"images", "member","category"}) // 순환 참조 방지
 @Builder
 public class Product {
     @Id
@@ -35,14 +35,14 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    @Column(name = "starting_price", precision = 10, scale = 2)
-    private BigDecimal startingPrice;
+    @Column(name = "starting_price")
+    private Long startingPrice;
 
-    @Column(name = "bid_increase", precision = 10, scale = 2)
-    private BigDecimal bidIncrease;
+    @Column(name = "bid_increase")
+    private Long bidIncrease;
 
-    @Column(name = "buy_now_price", precision = 10, scale = 2)
-    private BigDecimal buyNowPrice;
+    @Column(name = "buy_now_price")
+    private Long buyNowPrice;
 
     // 카테고리 이름을 저장하는 필드 추가
     @Column(name = "category_name")
@@ -51,17 +51,14 @@ public class Product {
     // Category 관계 유지
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
-    @JsonIgnore // 순환 참조 방지
     private Category category;
 
     // Member 관계 추가
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    @JsonIgnore // 순환 참조 방지
     private Member member;
 
     @Builder.Default // Builder에서도 기본값 사용
-    @JsonManagedReference // JSON 직렬화 설정
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 

@@ -23,7 +23,6 @@ import java.util.List;
         }
 )
 @Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //json 변환 발생 문제 해결
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -50,7 +49,6 @@ public class Member {
     private String refreshToken;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    @JsonIgnore // 순환 참조 방지
     private List<Product> products = new ArrayList<>();
 
     @CreationTimestamp
