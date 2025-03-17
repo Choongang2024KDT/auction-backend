@@ -25,9 +25,7 @@ spring:
     username: root
     password: mariadb
 
-  sql:
-    init:
-      mode: always
+
 
   #  cloud:
   #    aws:
