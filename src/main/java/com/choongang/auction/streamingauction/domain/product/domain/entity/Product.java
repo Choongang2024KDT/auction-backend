@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
+import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -15,16 +16,20 @@ import java.util.List;
 @Table(name = "product")
 @Getter
 @Setter
-@ToString(exclude = "images") // 순환 참조 방지
+@ToString(exclude = {"images","member"}) // 순환 참조 방지
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = "images") // 순환 참조 방지
+@EqualsAndHashCode(exclude = {"images","member"}) // 순환 참조 방지
 @Builder
 public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
     private Long productId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    private Member member;
 
     @Column(name = "product_name", nullable = false)
     private String name;

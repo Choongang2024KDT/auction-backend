@@ -1,12 +1,16 @@
 package com.choongang.auction.streamingauction.domain.member.entity;
 
 
+import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
@@ -43,6 +47,10 @@ public class Member {
     @Column(length = 255)
     private String refreshToken;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    @JsonIgnore // 순환 참조 방지
+    private List<Product> products = new ArrayList<>();
+
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -62,5 +70,10 @@ public class Member {
         this.password = password;
         this.email = email;
         this.name = name;
+    }
+    // 상품 추가 메소드
+    public void addProduct(Product product) {
+        this.products.add(product);
+        product.setMember(this);
     }
 }

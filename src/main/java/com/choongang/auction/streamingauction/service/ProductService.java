@@ -3,11 +3,13 @@ package com.choongang.auction.streamingauction.service;
 import com.choongang.auction.streamingauction.domain.auctionboard.entity.AuctionBoard;
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.category.entity.CategoryType;
+import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.ProductImage;
 import com.choongang.auction.streamingauction.repository.AuctionBoardRepository;
 import com.choongang.auction.streamingauction.repository.CategoryRepository;
+import com.choongang.auction.streamingauction.repository.MemberRepository;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -27,16 +29,27 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
     private final AuctionBoardRepository auctionBoardRepository;
+    private final MemberRepository memberRepository;
 
     /**
      * 상품을 이미지와 함께 저장하고 경매 게시판에 등록합니다.
+     * 로그인한 회원 정보도 함께 저장합니다.
      *
      * @param dto 상품 생성 DTO
      * @param imageUrls 이미지 URL 목록
+     * @param username 로그인한 회원의 사용자명
      * @return 저장된 상품 엔티티
      */
-    public Product saveProductWithImages(ProductCreate dto, List<String> imageUrls) {
-        log.info("상품 등록 시작: {}, 이미지 개수: {}", dto.productName(), imageUrls != null ? imageUrls.size() : 0);
+    public Product saveProductWithImages(ProductCreate dto, List<String> imageUrls, String username) {
+        log.info("상품 등록 시작: {}, 이미지 개수: {}, 회원: {}",
+                dto.productName(),
+                imageUrls != null ? imageUrls.size() : 0,
+                username);
+
+        // 회원 조회
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + username));
+        log.info("회원 조회 결과: ID={}, 이름={}", member.getId(), member.getName());
 
         // 카테고리 조회
         Category category = findCategoryByType(dto.productCategory());
@@ -48,6 +61,7 @@ public class ProductService {
                 .name(dto.productName())
                 .description(dto.productDescription())
                 .category(category)  // 카테고리 설정
+                .member(member)      // 회원 설정
                 .images(new ArrayList<>())  // 빈 이미지 리스트로 초기화
                 .build();
 
@@ -83,10 +97,11 @@ public class ProductService {
 
         auctionBoardRepository.save(auctionBoard);
 
-        log.info("저장된 상품: ID={}, 카테고리={}, 이미지 개수={}",
+        log.info("저장된 상품: ID={}, 카테고리={}, 이미지 개수={}, 회원={}",
                 savedProduct.getProductId(),
                 savedProduct.getCategory().getCategoryType(),
-                savedProduct.getImages().size());
+                savedProduct.getImages().size(),
+                savedProduct.getMember().getUsername());
 
         return savedProduct;
     }
@@ -155,6 +170,34 @@ public class ProductService {
     }
 
     /**
+     * 회원별 상품을 조회합니다.
+     *
+     * @param username 회원 사용자명
+     * @return 해당 회원이 등록한 상품 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Product> findProductsByMember(String username) {
+        Member member = memberRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("회원을 찾을 수 없습니다: " + username));
+
+        log.info("회원별 상품 조회: 회원={}, ID={}", username, member.getId());
+
+        return productRepository.findByMember(member);
+    }
+
+    /**
+     * 회원 ID별 상품을 조회합니다.
+     *
+     * @param memberId 회원 ID
+     * @return 해당 회원이 등록한 상품 목록
+     */
+    @Transactional(readOnly = true)
+    public List<Product> findProductsByMemberId(Long memberId) {
+        log.info("회원 ID별 상품 조회: ID={}", memberId);
+        return productRepository.findByMemberId(memberId);
+    }
+
+    /**
      * 상품을 삭제합니다.
      *
      * @param id 삭제할 상품 ID
@@ -162,5 +205,25 @@ public class ProductService {
     public void deleteProduct(Long id) {
         productRepository.deleteById(id);
         log.info("상품 삭제 완료: ID={}", id);
+    }
+
+    /**
+     * 회원이 등록한 상품을 삭제합니다.
+     * 상품 소유자와 삭제 요청자가 일치하는지 확인합니다.
+     *
+     * @param productId 삭제할 상품 ID
+     * @param username 삭제 요청자 사용자명
+     */
+    public void deleteProductByMember(Long productId, String username) {
+        Product product = productRepository.findById(productId)
+                .orElseThrow(() -> new RuntimeException("상품을 찾을 수 없습니다. ID: " + productId));
+
+        // 상품 소유자 확인
+        if (!product.getMember().getUsername().equals(username)) {
+            throw new RuntimeException("상품 삭제 권한이 없습니다. 상품 소유자만 삭제할 수 있습니다.");
+        }
+
+        productRepository.delete(product);
+        log.info("회원 상품 삭제 완료: 상품ID={}, 회원={}", productId, username);
     }
 }

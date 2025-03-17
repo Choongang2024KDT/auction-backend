@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.repository;
 
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
+import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -16,4 +17,13 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
 
     // 카테고리별 상품 조회 메서드 추가
     List<Product> findByCategory(Category category);
+
+    // 회원별 상품 조회
+    List<Product> findByMember(Member member);
+
+    // 또는 회원 ID로 조회
+    List<Product> findByMemberId(Long memberId);
+
+    // 또는 회원 이름으로 조회
+    List<Product> findByMemberUsername(String username);
 }

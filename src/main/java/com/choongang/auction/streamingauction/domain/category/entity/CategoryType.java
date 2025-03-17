@@ -9,5 +9,4 @@ public enum CategoryType {
     BOOKS,
     TOYS,
     OTHERS;
-
 }
