@@ -52,11 +52,12 @@ public class ProductService {
         log.info("카테고리 조회 결과: ID={}, Type={}",
                 category.getCategoryId(), category.getCategoryType());
 
-        // 상품 엔티티 생성 (모든 필드 포함)
+        // 상품 엔티티 생성 (가격 정보 포함)
         Product productEntity = Product.builder()
                 .name(dto.productName())
                 .description(dto.productDescription())
                 .category(category)
+                .categoryName(category.getCategoryType().name()) // 카테고리명 직접 설정
                 .member(member)
                 .startPrice(BigDecimal.valueOf(dto.productStartPrice()))
                 .bidIncrease(BigDecimal.valueOf(dto.productBidIncrement()))

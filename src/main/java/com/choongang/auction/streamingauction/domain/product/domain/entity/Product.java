@@ -35,7 +35,6 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    // AuctionBoard에서 통합된 필드들
     @Column(name = "start_price", precision = 10, scale = 2)
     private BigDecimal startPrice;
 
@@ -44,6 +43,10 @@ public class Product {
 
     @Column(name = "buy_now_price", precision = 10, scale = 2)
     private BigDecimal buyNowPrice;
+
+    // 카테고리 이름을 저장하는 필드 추가
+    @Column(name = "category_name")
+    private String categoryName;
 
     // Category 관계 유지
     @ManyToOne(fetch = FetchType.EAGER)
@@ -79,5 +82,13 @@ public class Product {
     // 대표 이미지 URL 반환 메소드
     public String getMainImageUrl() {
         return images.isEmpty() ? null : images.get(0).getImageUrl();
+    }
+
+    // 카테고리 설정 시 카테고리명도 함께 설정하는 메서드
+    public void setCategory(Category category) {
+        this.category = category;
+        if (category != null) {
+            this.categoryName = category.getCategoryType().name();
+        }
     }
 }
