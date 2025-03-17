@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.ChatRequestDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.ChatResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Chat;
 import com.choongang.auction.streamingauction.service.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -35,7 +36,7 @@ public class ChatController {
             @PathVariable Long auctionId
     ){
         // 해당 경매에 대한 채팅 내역을 조회
-        List<Chat> chat = chatService.getChat(auctionId);
+        List<ChatResponseDto> chat = chatService.getChat(auctionId);
 
         // 메시지에 auctionId를 포함시켜 반환
         String message = String.format("%d번 경매방의 채팅 내역입니다", auctionId);

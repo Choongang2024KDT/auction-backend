@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.AuctionRequestDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.AuctionResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.service.AuctionService;
 import lombok.RequiredArgsConstructor;
@@ -36,12 +37,10 @@ public class AuctionController {
     public ResponseEntity<?> getAuctionInfo(
             @PathVariable Long productId
     ){
-        Optional<Auction> auctionInfo = auctionService.getAuctionInfo(productId);
+        AuctionResponseDto auctionInfo = auctionService.getAuctionInfo(productId);
         return ResponseEntity.ok().body(Map.of(
                 "message", "경매 조회 요청에 성공했습니다.",
                 "auctionInfo" , auctionInfo
         ));
     }
-
-
 }
