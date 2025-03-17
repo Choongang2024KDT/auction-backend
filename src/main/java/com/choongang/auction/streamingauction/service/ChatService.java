@@ -1,17 +1,18 @@
 package com.choongang.auction.streamingauction.service;
 
 import com.choongang.auction.streamingauction.domain.dto.requestDto.ChatRequestDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.ChatResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.domain.entity.Chat;
 import com.choongang.auction.streamingauction.repository.AuctionRepository;
 import com.choongang.auction.streamingauction.repository.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -59,7 +60,10 @@ public class ChatService {
     }
 
     //채팅 내역 조회 - 채팅 시간 순
-    public List<Chat> getChat(Long auctionId){
-        return chatRepository.findByAuctionIdOrderBySentAtAsc(auctionId);
+    public List<ChatResponseDto> getChat(Long auctionId)
+    {
+        List<Chat> foundChat = chatRepository.findByAuctionIdOrderBySentAtAsc(auctionId);
+        List<ChatResponseDto> getChat = foundChat.stream().map(chat -> ChatResponseDto.fromEntity(chat)).collect(Collectors.toList());
+        return getChat;
     }
 }

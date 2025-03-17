@@ -8,12 +8,11 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 
 @Getter
-@ToString
+@ToString(exclude = {"auction"})
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode
 @Builder
-
 @Entity
 @Table(name = "Bid")  // 실제 데이터베이스 테이블명
 public class Bid {

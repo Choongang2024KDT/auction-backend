@@ -14,6 +14,7 @@ import java.time.LocalDateTime;
 @Builder
 @Entity
 @Table(name = "chat")
+@ToString(exclude = {"auction"})
 public class Chat {
 
     @Id
