@@ -1,10 +1,7 @@
 package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
-
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductDTO;
-import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
-import com.choongang.auction.streamingauction.domain.product.domain.entity.ProductImage;
 import com.choongang.auction.streamingauction.jwt.JwtTokenProvider;
 import com.choongang.auction.streamingauction.service.ProductService;
 import lombok.RequiredArgsConstructor;
@@ -16,9 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-
 import java.util.*;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/product")
@@ -36,8 +31,8 @@ public class ProductController {
             @RequestParam("productName") String productName,
             @RequestParam("productDescription") String productDescription,
             @RequestParam("productCategory") String productCategory,
-            @RequestParam("productStartPrice") Long productStartPrice,
-            @RequestParam("productBidIncrease") Long productBidIncrease,
+            @RequestParam("productStartingPrice") Long productStartingPrice,
+            @RequestParam("productBidIncrement") Long productBidIncrement,
             @RequestParam("productBuyNowPrice") Long productBuyNowPrice,
             @RequestParam(value = "images", required = false) MultipartFile[] files,
             @RequestHeader("Authorization") String authHeader) {
@@ -49,12 +44,11 @@ public class ProductController {
         log.info("상품 등록 요청: {}, 회원: {}", productName, username);
         log.info("카테고리: {}", productCategory);
         log.info("가격 정보: 시작가={}, 입찰단위={}, 즉시구매가={}",
-                productStartPrice, productBidIncrease, productBuyNowPrice);
+                productStartingPrice, productBidIncrement, productBuyNowPrice);
         log.info("이미지 파일 개수: {}", files != null ? files.length : 0);
 
+        // 이미지 URL 생성 (실제 파일 저장은 하지 않음)
         List<String> imageUrls = new ArrayList<>();
-
-        // 파일 업로드 처리 (DB에 URL만 저장)
         if (files != null && files.length > 0) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
@@ -72,23 +66,23 @@ public class ProductController {
             }
         }
 
-        // DTO 생성 및 저장
+        // 요청 파라미터로 DTO 객체 생성
         ProductCreate dto = new ProductCreate(
                 productName,
                 productDescription,
                 productCategory,
-                productStartPrice,
-                productBidIncrease,
+                productStartingPrice,
+                productBidIncrement,
                 productBuyNowPrice,
                 imageUrls.isEmpty() ? null : imageUrls.get(0)
         );
 
-        // 회원 정보와 함께 상품 저장
-        Product savedProduct = productService.saveProductWithImages(dto, imageUrls, username);
+        // 서비스 계층을 통해 상품 저장 및 결과 DTO 받기
+        ProductDTO savedProduct = productService.saveProductWithImages(dto, imageUrls, username);
 
         return ResponseEntity.ok().body(Map.of(
                 "message", "상품이 등록되었습니다.",
-                "product", convertToDTO(savedProduct)
+                "product", savedProduct
         ));
     }
 
@@ -96,11 +90,11 @@ public class ProductController {
     @GetMapping("/{id}")
     public ResponseEntity<?> findProduct(@PathVariable Long id) {
         try {
-            Product product = productService.findProduct(id);
+            ProductDTO product = productService.findProduct(id);
 
             return ResponseEntity.ok().body(Map.of(
                     "message", "상품이 조회됐습니다.",
-                    "product", convertToDTO(product)
+                    "product", product
             ));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of(
@@ -112,16 +106,12 @@ public class ProductController {
     // 모든 상품 조회
     @GetMapping("/all")
     public ResponseEntity<?> getAllProducts() {
-        List<Product> products = productService.findAllProducts();
-
-        List<ProductDTO> productDTOs = products.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<ProductDTO> products = productService.findAllProducts();
 
         return ResponseEntity.ok().body(Map.of(
                 "message", "전체 상품 목록을 조회했습니다.",
-                "products", productDTOs,
-                "count", productDTOs.size()
+                "products", products,
+                "count", products.size()
         ));
     }
 
@@ -129,16 +119,12 @@ public class ProductController {
     @GetMapping("/category/{categoryType}")
     public ResponseEntity<?> getProductsByCategory(@PathVariable String categoryType) {
         try {
-            List<Product> products = productService.findProductsByCategory(categoryType);
-
-            List<ProductDTO> productDTOs = products.stream()
-                    .map(this::convertToDTO)
-                    .collect(Collectors.toList());
+            List<ProductDTO> products = productService.findProductsByCategory(categoryType);
 
             return ResponseEntity.ok().body(Map.of(
                     "message", categoryType + " 카테고리의 상품 목록을 조회했습니다.",
-                    "products", productDTOs,
-                    "count", productDTOs.size()
+                    "products", products,
+                    "count", products.size()
             ));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of(
@@ -154,37 +140,29 @@ public class ProductController {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtTokenProvider.getCurrentLoginUsername(token);
 
-        List<Product> products = productService.findProductsByMember(username);
-
-        List<ProductDTO> productDTOs = products.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<ProductDTO> products = productService.findProductsByMember(username);
 
         return ResponseEntity.ok().body(Map.of(
                 "message", "내 상품 목록을 조회했습니다.",
-                "products", productDTOs,
-                "count", productDTOs.size()
+                "products", products,
+                "count", products.size()
         ));
     }
 
     // 특정 회원의 상품 목록 조회
     @GetMapping("/user/{username}")
     public ResponseEntity<?> getUserProducts(@PathVariable String username) {
-        List<Product> products = productService.findProductsByMember(username);
-
-        List<ProductDTO> productDTOs = products.stream()
-                .map(this::convertToDTO)
-                .collect(Collectors.toList());
+        List<ProductDTO> products = productService.findProductsByMember(username);
 
         return ResponseEntity.ok().body(Map.of(
                 "message", username + " 회원의 상품 목록을 조회했습니다.",
-                "products", productDTOs,
+                "products", products,
                 "seller", username,
-                "count", productDTOs.size()
+                "count", products.size()
         ));
     }
 
-    // 상품 삭제
+    // 상품 삭제 (관리자 권한)
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteProduct(@PathVariable Long id) {
@@ -216,26 +194,5 @@ public class ProductController {
                     "message", e.getMessage()
             ));
         }
-    }
-
-    // Product 엔티티를 DTO로 변환
-    private ProductDTO convertToDTO(Product product) {
-        List<String> imageUrls = product.getImages().stream()
-                .map(ProductImage::getImageUrl)
-                .collect(Collectors.toList());
-
-        return ProductDTO.builder()
-                .productId(product.getProductId())
-                .name(product.getName())
-                .description(product.getDescription())
-                .startPrice(product.getStartPrice())
-                .bidIncrease(product.getBidIncrease())
-                .buyNowPrice(product.getBuyNowPrice())
-                .categoryType(product.getCategory().getCategoryType().name())
-                .sellerUsername(product.getMember() != null ? product.getMember().getUsername() : null)
-                .imageUrls(imageUrls)
-                .createdAt(product.getCreatedAt())
-                .updatedAt(product.getUpdatedAt())
-                .build();
     }
 }

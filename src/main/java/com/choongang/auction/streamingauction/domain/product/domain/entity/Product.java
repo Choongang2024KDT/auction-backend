@@ -2,8 +2,6 @@ package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -35,33 +33,30 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    @Column(name = "start_price", precision = 10, scale = 2)
-    private BigDecimal startPrice;
+    @Column(name = "start_price")
+    private Long startingPrice;
 
-    @Column(name = "bid_increase", precision = 10, scale = 2)
-    private BigDecimal bidIncrease;
+    @Column(name = "bid_increase")
+    private Long bidIncrease;
 
-    @Column(name = "buy_now_price", precision = 10, scale = 2)
-    private BigDecimal buyNowPrice;
+    @Column(name = "buy_now_price")
+    private Long buyNowPrice;
 
     // 카테고리 이름을 저장하는 필드 추가
     @Column(name = "category_name")
     private String categoryName;
 
     // Category 관계 유지
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
-    @JsonIgnore // 순환 참조 방지
     private Category category;
 
     // Member 관계 추가
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
-    @JsonIgnore // 순환 참조 방지
     private Member member;
 
     @Builder.Default // Builder에서도 기본값 사용
-    @JsonManagedReference // JSON 직렬화 설정
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
 

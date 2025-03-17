@@ -1,9 +1,6 @@
 package com.choongang.auction.streamingauction.domain.member.entity;
 
-
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,7 +9,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-
 
 @Entity
 @Table(
@@ -23,7 +19,6 @@ import java.util.List;
         }
 )
 @Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //json 변환 발생 문제 해결
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -42,7 +37,6 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String name;
 
-
     @Column(nullable = false, length = 20)
     private String role = "ROLE_USER";
 
@@ -50,7 +44,6 @@ public class Member {
     private String refreshToken;
 
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    @JsonIgnore // 순환 참조 방지
     private List<Product> products = new ArrayList<>();
 
     @CreationTimestamp
@@ -64,15 +57,15 @@ public class Member {
     @Column(name = "last_login_at")
     private LocalDateTime lastLoginAt;
 
-
     @Builder
     private Member(String username, String password, String email,
-                    String name) {
+                   String name) {
         this.username = username;
         this.password = password;
         this.email = email;
         this.name = name;
     }
+
     // 상품 추가 메소드
     public void addProduct(Product product) {
         this.products.add(product);

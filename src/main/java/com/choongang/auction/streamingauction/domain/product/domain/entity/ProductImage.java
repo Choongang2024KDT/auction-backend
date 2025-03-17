@@ -1,6 +1,5 @@
 package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
-import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -22,7 +21,6 @@ public class ProductImage {
     @Column(name = "image_url", nullable = false, length = 255)
     private String imageUrl;
 
-    @JsonBackReference // 직렬화 순환 참조 방지
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;

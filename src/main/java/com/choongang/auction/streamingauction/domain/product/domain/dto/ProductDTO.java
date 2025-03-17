@@ -5,7 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.math.BigDecimal;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -17,9 +17,9 @@ public class ProductDTO {
     private Long productId;
     private String name;
     private String description;
-    private BigDecimal startPrice;
-    private BigDecimal bidIncrease;
-    private BigDecimal buyNowPrice;
+    private Long startingPrice;
+    private Long bidIncrease;
+    private Long buyNowPrice;
     private String categoryType;
     private String sellerUsername;
     private List<String> imageUrls;
