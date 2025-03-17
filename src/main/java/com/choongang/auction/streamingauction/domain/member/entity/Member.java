@@ -2,8 +2,6 @@ package com.choongang.auction.streamingauction.domain.member.entity;
 
 
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
