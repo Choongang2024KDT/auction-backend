@@ -25,7 +25,7 @@ public class AuctionBoard {
     @Column(name = "board_id")
     private Long boardId;
 
-    @ManyToOne(fetch = FetchType.EAGER)
+    @OneToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "product_id")
     private Product product;
 

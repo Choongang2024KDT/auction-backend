@@ -3,6 +3,7 @@ package com.choongang.auction.streamingauction.domain.member.entity;
 
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -22,6 +23,7 @@ import java.util.List;
         }
 )
 @Getter @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"}) //json 변환 발생 문제 해결
 public class Member {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

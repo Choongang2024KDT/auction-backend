@@ -1,7 +1,9 @@
 package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
+import com.choongang.auction.streamingauction.domain.auctionboard.entity.AuctionBoard;
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
@@ -29,6 +31,7 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id")
+    @JsonIgnore
     private Member member;
 
     @Column(name = "product_name", nullable = false)
@@ -39,6 +42,7 @@ public class Product {
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
+    @JsonIgnore
     private Category category;
 
 
@@ -55,7 +59,9 @@ public class Product {
     @Column(name = "product_updated_at")
     private LocalDateTime updatedAt;
 
-
+    // Product 엔티티 클래스에 다음과 같이 추가
+    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
+    private AuctionBoard auctionBoard;
 
     // 이미지 추가 헬퍼 메소드
     public void addImage(ProductImage image) {

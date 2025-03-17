@@ -14,10 +14,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @RestController
@@ -123,30 +120,78 @@ public class ProductController {
         ));
     }
 
-    // 카테고리별 상품 조회
     @GetMapping("/category/{categoryType}")
     public ResponseEntity<?> getProductsByCategory(@PathVariable String categoryType) {
-        List<Product> products = productService.findProductsByCategory(categoryType);
-        return ResponseEntity.ok().body(Map.of(
-                "message", categoryType + " 카테고리의 상품 목록을 조회했습니다.",
-                "products", products,
-                "count", products.size()
-        ));
+        try {
+            List<Product> products = productService.findProductsByCategory(categoryType);
+
+            // DTO로 변환하여 순환 참조 방지
+            List<Map<String, Object>> productDtos = products.stream()
+                    .map(product -> {
+                        Map<String, Object> dto = new HashMap<>();
+                        dto.put("productId", product.getProductId());
+                        dto.put("name", product.getName());
+                        dto.put("description", product.getDescription());
+                        dto.put("categoryType", product.getCategory().getCategoryType().name());
+
+                        // 이미지 URL만 추출
+                        List<String> imageUrls = product.getImages().stream()
+                                .map(img -> img.getImageUrl())
+                                .collect(Collectors.toList());
+                        dto.put("imageUrls", imageUrls);
+
+                        // 회원 정보는 username만 포함
+                        if (product.getMember() != null) {
+                            dto.put("sellerUsername", product.getMember().getUsername());
+                        }
+
+                        return dto;
+                    })
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok().body(Map.of(
+                    "message", categoryType + " 카테고리의 상품 목록을 조회했습니다.",
+                    "products", productDtos,
+                    "count", productDtos.size()
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "error", "카테고리 상품 조회 중 오류가 발생했습니다: " + e.getMessage()
+            ));
+        }
     }
 
     // 내 상품 목록 조회 (로그인한 회원)
     @GetMapping("/my-products")
-    @PreAuthorize("isAuthenticated()")
     public ResponseEntity<?> getMyProducts(@RequestHeader("Authorization") String authHeader) {
         String token = authHeader.replace("Bearer ", "");
         String username = jwtTokenProvider.getCurrentLoginUsername(token);
 
         List<Product> products = productService.findProductsByMember(username);
 
+        // DTO로 변환
+        List<Map<String, Object>> productDTOs = products.stream()
+                .map(product -> {
+                    Map<String, Object> dto = new HashMap<>();
+                    dto.put("id", product.getProductId());
+                    dto.put("name", product.getName());
+                    dto.put("description", product.getDescription());
+                    dto.put("categoryType", product.getCategory().getCategoryType().name());
+
+                    // 이미지 URL만 추출
+                    List<String> imageUrls = product.getImages().stream()
+                            .map(img -> img.getImageUrl())
+                            .collect(Collectors.toList());
+                    dto.put("imageUrls", imageUrls);
+
+                    return dto;
+                })
+                .collect(Collectors.toList());
+
         return ResponseEntity.ok().body(Map.of(
                 "message", "내 상품 목록을 조회했습니다.",
-                "products", products,
-                "count", products.size()
+                "products", productDTOs,
+                "count", productDTOs.size()
         ));
     }
 
