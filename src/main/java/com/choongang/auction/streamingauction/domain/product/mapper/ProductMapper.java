@@ -22,6 +22,7 @@ public class ProductMapper {
         return ProductDTO.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
+                .memberId(product.getMember().getId())
                 .description(product.getDescription())
                 .startingPrice(product.getStartingPrice())
                 .bidIncrease(product.getBidIncrease())
