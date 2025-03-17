@@ -1,6 +1,5 @@
 package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
-import com.choongang.auction.streamingauction.domain.auctionboard.entity.AuctionBoard;
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -10,6 +9,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +18,10 @@ import java.util.List;
 @Table(name = "product")
 @Getter
 @Setter
-@ToString(exclude = {"images","member"}) // 순환 참조 방지
+@ToString(exclude = {"images", "member"}) // 순환 참조 방지
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"images","member"}) // 순환 참조 방지
+@EqualsAndHashCode(exclude = {"images", "member"}) // 순환 참조 방지
 @Builder
 public class Product {
     @Id
@@ -29,22 +29,33 @@ public class Product {
     @Column(name = "id")
     private Long productId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
-    @JsonIgnore
-    private Member member;
-
     @Column(name = "product_name", nullable = false)
     private String name;
 
     @Column(name = "product_description")
     private String description;
 
+    // AuctionBoard에서 통합된 필드들
+    @Column(name = "start_price", precision = 10, scale = 2)
+    private BigDecimal startPrice;
+
+    @Column(name = "bid_increase", precision = 10, scale = 2)
+    private BigDecimal bidIncrease;
+
+    @Column(name = "buy_now_price", precision = 10, scale = 2)
+    private BigDecimal buyNowPrice;
+
+    // Category 관계 유지
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "category_id")
-    @JsonIgnore
+    @JsonIgnore // 순환 참조 방지
     private Category category;
 
+    // Member 관계 추가
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id")
+    @JsonIgnore // 순환 참조 방지
+    private Member member;
 
     @Builder.Default // Builder에서도 기본값 사용
     @JsonManagedReference // JSON 직렬화 설정
@@ -59,13 +70,14 @@ public class Product {
     @Column(name = "product_updated_at")
     private LocalDateTime updatedAt;
 
-    // Product 엔티티 클래스에 다음과 같이 추가
-    @OneToOne(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
-    private AuctionBoard auctionBoard;
-
     // 이미지 추가 헬퍼 메소드
     public void addImage(ProductImage image) {
         images.add(image);
         image.setProduct(this);
+    }
+
+    // 대표 이미지 URL 반환 메소드
+    public String getMainImageUrl() {
+        return images.isEmpty() ? null : images.get(0).getImageUrl();
     }
 }

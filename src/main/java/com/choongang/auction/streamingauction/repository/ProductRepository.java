@@ -15,15 +15,15 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     @Query("SELECT p FROM Product p LEFT JOIN FETCH p.images WHERE p.productId = :id")
     Optional<Product> findByIdWithImages(@Param("id") Long id);
 
-    // 카테고리별 상품 조회 메서드 추가
+    // 카테고리별 상품 조회
     List<Product> findByCategory(Category category);
 
     // 회원별 상품 조회
     List<Product> findByMember(Member member);
 
-    // 또는 회원 ID로 조회
-    List<Product> findByMemberId(Long memberId);
-
-    // 또는 회원 이름으로 조회
+    // 회원 이름으로 상품 조회
     List<Product> findByMemberUsername(String username);
+
+    // 상품명으로 검색 (부분 일치)
+    List<Product> findByNameContaining(String keyword);
 }
