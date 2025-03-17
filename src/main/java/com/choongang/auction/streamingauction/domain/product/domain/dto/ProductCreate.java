@@ -20,9 +20,9 @@ public record ProductCreate(
                 .name(this.productName())
                 .description(this.productDescription())
                 // 가격 관련 필드 통합
-                .startingPrice(BigDecimal.valueOf(this.productStartPrice()))
-                .bidIncrease(BigDecimal.valueOf(this.productBidIncrement()))
-                .buyNowPrice(BigDecimal.valueOf(this.productBuyNowPrice()))
+                .startingPrice(Long.valueOf(this.productStartPrice()))
+                .bidIncrease(Long.valueOf(this.productBidIncrement()))
+                .buyNowPrice(Long.valueOf(this.productBuyNowPrice()))
                 .build();
     }
 }

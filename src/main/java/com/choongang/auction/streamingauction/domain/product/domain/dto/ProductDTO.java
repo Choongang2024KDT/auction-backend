@@ -14,12 +14,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ProductDTO {
+
     private Long productId;
     private String name;
+    private Long memberId;
     private String description;
-    private BigDecimal startingPrice;
-    private BigDecimal bidIncrease;
-    private BigDecimal buyNowPrice;
+    private Long startingPrice;
+    private Long bidIncrease;
+    private Long buyNowPrice;
     private String categoryType;
     private String sellerUsername;
     private List<String> imageUrls;
