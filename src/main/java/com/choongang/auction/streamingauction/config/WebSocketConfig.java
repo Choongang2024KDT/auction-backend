@@ -23,7 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-connect")  // 웹소켓 연결 엔드포인트
-                .setAllowedOrigins("http://localhost:3000") // 명시적으로 React 앱의 URL을 설정
+                .setAllowedOrigins("http://localhost:5173") // 명시적으로 React 앱의 URL을 설정
                 .withSockJS();  // SockJS 지원 (구형 브라우저 대응)
     }
 
