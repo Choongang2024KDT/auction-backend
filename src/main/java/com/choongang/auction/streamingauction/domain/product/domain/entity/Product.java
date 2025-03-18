@@ -7,6 +7,7 @@ import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -15,10 +16,10 @@ import java.util.List;
 @Table(name = "product")
 @Getter
 @Setter
-@ToString(exclude = {"images", "member","category"}) // 순환 참조 방지
+@ToString(exclude = {"images", "member"}) // 순환 참조 방지
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(exclude = {"images", "member","category"}) // 순환 참조 방지
+@EqualsAndHashCode(exclude = {"images", "member"}) // 순환 참조 방지
 @Builder
 public class Product {
     @Id
@@ -32,7 +33,7 @@ public class Product {
     @Column(name = "product_description")
     private String description;
 
-    @Column(name = "starting_price")
+    @Column(name = "start_price")
     private Long startingPrice;
 
     @Column(name = "bid_increase")
@@ -46,7 +47,7 @@ public class Product {
     private String categoryName;
 
     // Category 관계 유지
-    @ManyToOne(fetch = FetchType.EAGER)
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     private Category category;
 

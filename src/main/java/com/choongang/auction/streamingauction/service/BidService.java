@@ -8,12 +8,8 @@ import com.choongang.auction.streamingauction.repository.AuctionRepository;
 import com.choongang.auction.streamingauction.repository.BidRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -26,7 +22,7 @@ public class BidService {
     private final AuctionService auctionService;
 
     //입찰 저장 후 입찰내역 전송
-    public Bid saveAndGetMaxBid(BidRequestDto bidRequestDto) {
+    public BidResponseDto saveAndGetMaxBid(BidRequestDto bidRequestDto) {
         //입찰 저장
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
 
@@ -41,7 +37,14 @@ public class BidService {
 
         //최고가 입찰내역 가져오기
         Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(bidRequestDto.auctionId());
-        return highestBid;
+        if (highestBid == null) {
+            return null;  // 최고가 입찰이 없다면 null 반환
+        }
+        // BidResponseDto record를 사용하여 생성
+        return new BidResponseDto(
+                highestBid.getUserId(),  // 사용자 ID
+                highestBid.getBidAmount()           // 입찰 금액
+        );
 
     }
 

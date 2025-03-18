@@ -30,7 +30,7 @@ public class WebSocketBidController {
         log.info("Received message for auctionId: {}, ChatRequestDto: {}", auctionId, bidRequestDto);
 
         // 입찰 데이터 저장 후 최고 입찰가 조회
-        Bid MaxBidInfo = bidService.saveAndGetMaxBid(bidRequestDto);
+        BidResponseDto MaxBidInfo = bidService.saveAndGetMaxBid(bidRequestDto);
 
         // WebSocket으로 입찰 정보를 "/topic/bid"로 전송
         // 서버가 직접 클라이언트에게 메세지를 보낼 수 있음 (SendTo랑 사용목적은 비슷하지만 입맛대로 데이터를 보낼 수 있음)
