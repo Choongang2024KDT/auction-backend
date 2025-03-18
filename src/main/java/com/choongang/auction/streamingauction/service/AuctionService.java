@@ -48,20 +48,30 @@ public class AuctionService {
     //경매 정보 요청
     public AuctionResponseDto getAuctionInfo(Long productId) {
         Optional<Auction> foundProduct = auctionRepository.findByProduct_ProductId(productId);
+
+        // 경매 정보가 없을 경우, isEmpty()로 체크
+        if (foundProduct.isEmpty()) {
+            return AuctionResponseDto.builder()
+                    .success(false)
+                    .message("경매 정보가 없습니다.")
+                    .build();
+        }
+
         Auction getProduct = foundProduct.get();
 
         // Product 엔티티를 ProductDTO로 변환
         ProductDTO productDTO = productMapper.toDto(getProduct.getProduct());
 
-        AuctionResponseDto auctionResponseDto = AuctionResponseDto.builder()
+        return AuctionResponseDto.builder()
                 .id(getProduct.getId())
                 .userId(getProduct.getUserId())
                 .currentPrice(getProduct.getCurrentPrice())
                 .product(productDTO)  // Entity 대신 DTO 사용
                 .startTime(LocalDateTime.now())
                 .status(getProduct.getStatus())
+                .success(true)  // 성공 상태
+                .message("경매 정보가 정상적으로 반환되었습니다.")  // 정상 메시지
                 .build();
-        return auctionResponseDto;
     }
     //경매 현재 진행가 업데이트
     public void updateAuctionCurrentPrice(Long id , Long bidAmount) {

@@ -15,7 +15,9 @@ public record AuctionResponseDto(
         Long currentPrice,
         LocalDateTime startTime,
         LocalDateTime endTime,
-        Status status
+        Status status,
+        boolean success,       // 추가된 필드: 성공 여부
+        String message         // 추가된 필드: 메시지
 ) {
 }
 
