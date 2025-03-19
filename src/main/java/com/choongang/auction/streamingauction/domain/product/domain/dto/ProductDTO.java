@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.domain.product.domain.dto;
 
+import com.choongang.auction.streamingauction.domain.dto.responseDto.AuctionResponseDto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -25,6 +26,10 @@ public class ProductDTO {
     private String categoryType;
     private String sellerUsername;
     private List<String> imageUrls;
+    private AuctionResponseDto auction;
+    private Long auctionId;
+    private String auctionStatus;
+    private Long currentPrice;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

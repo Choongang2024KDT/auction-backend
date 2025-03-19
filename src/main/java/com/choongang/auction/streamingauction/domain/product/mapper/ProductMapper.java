@@ -19,7 +19,8 @@ public class ProductMapper {
             return null;
         }
 
-        return ProductDTO.builder()
+        // 기본 필드 설정으로 DTO 생성
+        ProductDTO productDTO = ProductDTO.builder()
                 .productId(product.getProductId())
                 .name(product.getName())
                 .memberId(product.getMember().getId())
@@ -35,6 +36,15 @@ public class ProductMapper {
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
                 .build();
+
+        // Auction 정보가 있으면 setter로 설정
+        if (product.getAuction() != null) {
+            productDTO.setAuctionId(product.getAuction().getId());
+            productDTO.setAuctionStatus(product.getAuction().getStatus().name());
+            productDTO.setCurrentPrice(product.getAuction().getCurrentPrice());
+        }
+
+        return productDTO;
     }
 
     public List<ProductDTO> toDtoList(List<Product> products) {
