@@ -64,7 +64,7 @@ public class AuctionService {
 
         return AuctionResponseDto.builder()
                 .id(getProduct.getId())
-                .userId(getProduct.getUserId())
+//                .userId(getProduct.) //상품을 게시한 유저의 아이디 (판매자)
                 .currentPrice(getProduct.getCurrentPrice())
                 .product(productDTO)  // Entity 대신 DTO 사용
                 .startTime(LocalDateTime.now())
