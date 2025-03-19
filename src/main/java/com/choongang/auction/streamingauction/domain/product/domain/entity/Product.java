@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.domain.product.domain.entity;
 
 import com.choongang.auction.streamingauction.domain.category.entity.Category;
+import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import jakarta.persistence.*;
 import lombok.*;
@@ -59,6 +60,11 @@ public class Product {
     @Builder.Default // Builder에서도 기본값 사용
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ProductImage> images = new ArrayList<>();
+
+    // auction 연관관계 추가
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auction_id")
+    private Auction auction;
 
     @CreationTimestamp
     @Column(name = "product_created_at", updatable = false)
