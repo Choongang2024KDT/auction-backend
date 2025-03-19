@@ -35,31 +35,33 @@ public class JwtTokenProvider {
     }
 
     // 토큰 발급 로직
-    // 액세스 토큰 생성 (사용자가 들고다닐 신분증) : 유효기간이 짧다.
-    public String createAccessToken(String username) {
-        return createToken(username, jwtProperties.getAccessTokenValidityTime());
+    // 액세스 토큰 생성 메서드 수정
+    public String createAccessToken(String username, String name) {
+        return createToken(username, name, jwtProperties.getAccessTokenValidityTime());
     }
 
-    // 리프레시 토큰 생성 (서버가 보관할 신분증을 재발급하기위한 정보) : 유효기간이 비교적 김
-    public String createRefreshToken(String username) {
-        return createToken(username, jwtProperties.getRefreshTokenValidityTime());
+    // 리프레시 토큰 생성 메서드 수정
+    public String createRefreshToken(String username, String name) {
+        return createToken(username, name, jwtProperties.getRefreshTokenValidityTime());
     }
 
-    // 공통 토큰 생성 로직
-    private String createToken(String username, long validityTime) {
-
+    // 공통 토큰 생성 로직 수정
+    private String createToken(String username, String name, long validityTime) {
         // 현재 시간
         Date now = new Date();
-
         // 만료시간
         Date validity = new Date(now.getTime() + validityTime);
 
+        // Claims 객체를 생성하여 name 정보 추가
+        Claims claims = Jwts.claims().setSubject(username);
+        claims.put("name", name); // 사용자 이름 추가
+
         // 서명을 넣어야 함
         return Jwts.builder()
+                .setClaims(claims) // claims 설정 (subject와 name 포함)
                 .setIssuer("Instagram clone")  // 발급자 정보
                 .setIssuedAt(now) // 발급시간
                 .setExpiration(validity) // 만료시간
-                .setSubject(username) // 이 토큰을 구별할 유일한 값
                 .signWith(key) // 서명 포함
                 .compact();
     }
@@ -88,6 +90,14 @@ public class JwtTokenProvider {
         return parseClaims(token).getSubject();
      }
 
+    /**
+     * 검증된 토큰에서 사용자 이름(name)을 추출하는 메서드
+     * @param token - 인증 토큰
+     * @return 토큰에서 추출한 사용자 이름(name)
+     */
+    public String getCurrentUserName(String token) {
+        return parseClaims(token).get("name", String.class);
+    }
     /**
      * 내부적으로 토큰을 파싱하여 Claims 객체를 반환하는 메서드입니다.
      *

@@ -121,7 +121,10 @@ public class MemberService {
         return Map.of(
                 "message", "로그인에 성공했습니다.",
                 "username", foundMember.getUsername(),
-                "accessToken", jwtTokenProvider.createAccessToken(foundMember.getUsername())
+                "name", foundMember.getName(), // 이름도 응답에 포함
+                "accessToken", jwtTokenProvider.createAccessToken(
+                        foundMember.getUsername(),
+                        foundMember.getName()) // name도 함께 전달
         );
     }
 }

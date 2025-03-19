@@ -1,6 +1,7 @@
 package com.choongang.auction.streamingauction.domain.dto.responseDto;
 
 import com.choongang.auction.streamingauction.domain.entity.Status;
+import com.choongang.auction.streamingauction.domain.member.dto.response.MemberDTO;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductDTO;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import lombok.Builder;

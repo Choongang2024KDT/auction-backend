@@ -67,6 +67,7 @@ public class AuctionService {
                 .userId(getProduct.getUserId())
                 .currentPrice(getProduct.getCurrentPrice())
                 .product(productDTO)  // Entity 대신 DTO 사용
+
                 .startTime(LocalDateTime.now())
                 .status(getProduct.getStatus())
                 .success(true)  // 성공 상태
