@@ -26,23 +26,42 @@ public class AuctionService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
 
-    //경매 데이터 저장
-    public void createAuction(AuctionRequestDto auctionRequestDto) {
+    //경매 생성
+    public AuctionResponseDto createAuction(AuctionRequestDto auctionRequestDto) {
 
         Optional<Product> getProductInfo = productRepository.findByIdWithImages(auctionRequestDto.productId());
+
+        // 해당 상품 id의 게시글이 없을 경우, isEmpty()로 체크
+        if (getProductInfo.isEmpty()) {
+            return AuctionResponseDto.builder()
+                    .success(false)
+                    .message("해당 상품은 등록되지 않은 상품입니다.")
+                    .build();
+        }
+        // 조회된 상품
         Product foundProduct = getProductInfo.get();
+
         //Auction 객체 생성
         Auction auctionEntity = Auction.builder()
                 .product(foundProduct)
-//                .userId(auctionRequestDto.userId())
-//                .title(auctionRequestDto.title())
-//                .description(auctionRequestDto.description())
-//                .startingPrice(auctionRequestDto.startingPrice())
                 .build();
+        // 경매 저장
+        Auction savedAuction = auctionRepository.save(auctionEntity);
 
-        //Chat객체 생성
+        // 생성된 경매에서 Product 엔티티를 ProductDtO로 변환
+        ProductDTO productDTO = productMapper.toDto(savedAuction.getProduct());
 
-        auctionRepository.save(auctionEntity);
+        // 저장된 경매 정보와 함께 성공 응답 반환
+        return AuctionResponseDto.builder()
+                .id(savedAuction.getId())  // 생성된 경매의 ID 반환
+                .product(productDTO)
+                .currentPrice(savedAuction.getCurrentPrice())
+                .startTime(savedAuction.getStartTime())
+                .endTime(savedAuction.getEndTime())
+                .status(savedAuction.getStatus())
+                .success(true)
+                .message("경매가 성공적으로 생성되었습니다.")
+                .build();
     }
 
     //경매 정보 요청
@@ -59,12 +78,11 @@ public class AuctionService {
 
         Auction getProduct = foundProduct.get();
 
-        // Product 엔티티를 ProductDTO로 변환
+        // Product 엔티티를 ProductDtO로 변환
         ProductDTO productDTO = productMapper.toDto(getProduct.getProduct());
 
         return AuctionResponseDto.builder()
                 .id(getProduct.getId())
-                .userId(getProduct.getUserId())
                 .currentPrice(getProduct.getCurrentPrice())
                 .product(productDTO)  // Entity 대신 DTO 사용
 
@@ -79,7 +97,7 @@ public class AuctionService {
         //업데이트할 경매를 조회
         Optional<Auction> foundAuction = auctionRepository.findById(id);
         Auction auctionEntity = foundAuction.get();
-        auctionEntity.setCurrentPrice(bidAmount); //currentPrice만 업데이트
+        auctionEntity.setCurrentPrice(bidAmount); //현재가만 업데이트
 
         auctionRepository.save(auctionEntity); // 현재가 업데이트
     }

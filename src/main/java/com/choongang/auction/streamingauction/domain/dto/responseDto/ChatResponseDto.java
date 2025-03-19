@@ -5,12 +5,12 @@ import lombok.Builder;
 
 @Builder
 public record ChatResponseDto(
-        Long userId,
+        String userName,
         String message
 ) {
     public static ChatResponseDto fromEntity (Chat chat) {
         return ChatResponseDto.builder()
-                .userId(chat.getId())
+                .userName(chat.getMember().getUsername())
                 .message(chat.getMessage())
                 .build();
     }

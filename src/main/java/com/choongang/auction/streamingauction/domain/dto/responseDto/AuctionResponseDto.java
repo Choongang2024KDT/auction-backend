@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 public record AuctionResponseDto(
         Long id,
         ProductDTO product,  // Entity 대신 DTO 사용
-        Long userId,
         Long currentPrice,
         LocalDateTime startTime,
         LocalDateTime endTime,
