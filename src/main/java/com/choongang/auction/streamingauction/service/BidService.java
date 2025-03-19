@@ -29,7 +29,7 @@ public class BidService {
         auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
 
         Bid bidEntity = Bid.builder()
-                .userId(bidRequestDto.userId())
+//                .member(bidRequestDto.userId())
                 .auction(foundAuction) //요청받은 id를 이용해 찾아낸 해당 경매를 설정 (fk로 auction_id가 설정되어 있어서 자동으로 입력해줌)
                 .bidAmount(bidRequestDto.bidAmount())
                 .build();

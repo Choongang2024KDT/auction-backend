@@ -23,13 +23,11 @@ public class AuctionController {
 
     //경매 생성 요청
     @PostMapping("/createAuction")
-    public ResponseEntity<?> creatAuction(
+    public ResponseEntity<?> createAuction(
             @RequestBody AuctionRequestDto auctionRequestDto
             ){
-        auctionService.createAuction(auctionRequestDto);
-        return ResponseEntity.ok().body(Map.of(
-                "message" , "경매가 시작되었습니다."
-        ));
+        AuctionResponseDto auctionInfo = auctionService.createAuction(auctionRequestDto);
+        return ResponseEntity.ok().body(auctionInfo);
     }
 
     //경매 조회 요청
