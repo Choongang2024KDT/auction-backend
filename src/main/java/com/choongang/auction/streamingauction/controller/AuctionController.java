@@ -41,4 +41,17 @@ public class AuctionController {
                 "auctionInfo" , auctionInfo
         ));
     }
+
+    // 판매자가 경매 종료 요청
+    @PostMapping("/closeAution")
+    public ResponseEntity<?> closeAuction(
+           @RequestBody AuctionRequestDto auctionRequestDto
+    ){
+        auctionService.closeAuctionBySeller(auctionRequestDto);
+
+        return ResponseEntity.ok().body(Map.of(
+                "message", "경매가 종료되었습니다."
+        ));
+    }
+
 }
