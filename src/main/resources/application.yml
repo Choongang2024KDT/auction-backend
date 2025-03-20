@@ -57,6 +57,10 @@ logging:
     com.choongang.auction: debug
     org.hibernate.SQL: info
 
+file:
+  upload:
+    location: C:\auction\uploads
+
 jwt:
   secret-key: L6h/xMxGO53HQmR/OB99qR/y0kTr2CAyaI5RqBIX184= # 환경 변수 적용
   access-token-validity-time: 3600000  # 1시간 (ms)

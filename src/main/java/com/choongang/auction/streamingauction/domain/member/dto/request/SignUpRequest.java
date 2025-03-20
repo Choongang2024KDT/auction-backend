@@ -18,7 +18,7 @@ public class SignUpRequest {
     private String name;
 
     @NotBlank(message = "사용자 을 입력해주세요.")
-    @Pattern(regexp = "^[a-zA-Z0-9._]$",
+    @Pattern(regexp = "^[a-zA-Z0-9._]{4,20}$",
             message = "아이디는 4-20자의 영문, 숫자 사용 가능합니다")
     private String username;
 
