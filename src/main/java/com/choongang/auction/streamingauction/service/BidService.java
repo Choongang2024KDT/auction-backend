@@ -29,15 +29,15 @@ public class BidService {
     private final MemberRepository memberRepository;
 
 
-    //입찰 저장 후 입찰내역 전송
+    //입찰 저장 후 입찰 내역 전송
     public BidResponseDto saveAndGetMaxBid(BidRequestDto bidRequestDto) {
-        //입찰 저장
+
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
         Optional<Member> foundMember = memberRepository.findById(bidRequestDto.memberId()); //회원 조회
         Member member = foundMember.get(); //회원 정보
-
+        //경매 현재가 업데이트
         auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
-
+        //입찰 저장
         Bid bidEntity = Bid.builder()
                 .member(member)
                 .auction(foundAuction) //요청받은 id를 이용해 찾아낸 해당 경매를 설정 (fk로 auction_id가 설정되어 있어서 자동으로 입력해줌)
@@ -50,6 +50,12 @@ public class BidService {
         if (highestBid == null) {
             return null;  // 최고가 입찰이 없다면 null 반환
         }
+
+        // 즉시입찰가보다 높은 금액일 때
+        if (highestBid.getBidAmount() >= foundAuction.getProduct().getBuyNowPrice()){
+            log.info("입찰가가 즉시 입찰가를 넘어서 경매가 종료됩니다.");
+        }
+
         // BidResponseDto record를 사용하여 생성
         return new BidResponseDto(
                 highestBid.getMember().getUsername(),  // 최고 입찰자
