@@ -1,4 +1,4 @@
-package com.choongang.auction.streamingauction.domain.notification.dto.response;
+package com.choongang.auction.streamingauction.domain.dto.responseDto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

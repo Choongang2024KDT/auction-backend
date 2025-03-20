@@ -1,6 +1,6 @@
 package com.choongang.auction.streamingauction.service;
 
-import com.choongang.auction.streamingauction.domain.notification.dto.response.NotificationDto;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.NotificationDto;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;

@@ -1,11 +1,10 @@
 package com.choongang.auction.streamingauction.service;
 
-import com.choongang.auction.streamingauction.domain.notification.dto.response.NotificationDto;
-import com.choongang.auction.streamingauction.domain.notification.entity.Notification;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.NotificationDto;
+import com.choongang.auction.streamingauction.domain.entity.Notification;
 import com.choongang.auction.streamingauction.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.weaver.ast.Not;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
