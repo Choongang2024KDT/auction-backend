@@ -18,12 +18,7 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     // 카테고리별 상품 조회
     List<Product> findByCategory(Category category);
 
-    // 회원별 상품 조회
-    List<Product> findByMember(Member member);
-
     // 회원 이름으로 상품 조회
     List<Product> findByMemberUsername(String username);
 
-    // 상품명으로 검색 (부분 일치)
-    List<Product> findByNameContaining(String keyword);
 }
