@@ -28,7 +28,7 @@ public class TradeRecordService {
         var query = queryFactory
                 .select(Projections.constructor(TradeRecordDTO.class,
                         tr.tradeId, tr.itemName, tr.amount, tr.productId, tr.createdAt,
-                        b.username)) // DTO 순서에 맞춤
+                        b.name)) // DTO 순서에 맞춤
                 .from(tr)
                 .join(b).on(tr.buyer.eq(b.id))
                 .where(tr.seller.eq(userId));
@@ -50,7 +50,7 @@ public class TradeRecordService {
         var query = queryFactory
                 .select(Projections.constructor(TradeRecordDTO.class,
                         tr.tradeId, tr.itemName, tr.amount, tr.productId, tr.createdAt,
-                        s.username)) // DTO 순서에 맞춤
+                        s.name)) // DTO 순서에 맞춤
                 .from(tr)
                 .join(s).on(tr.seller.eq(s.id))
                 .where(tr.buyer.eq(userId));
