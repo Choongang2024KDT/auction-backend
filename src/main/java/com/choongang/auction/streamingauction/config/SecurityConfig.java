@@ -40,7 +40,11 @@ public class SecurityConfig {
                                 // '/api'로 시작하는 요청은 모두 인증을 필수로 적용
                                 .requestMatchers("/api/**").permitAll()
                                 // 기타 등등 나머지(jsp, css, js, image...)는 모두 허용
+                                // 로그인이 안된 회원의 상품등록 요청을 막음
+                                .requestMatchers("/api/product/**").authenticated()
                                 .anyRequest().permitAll()
+
+
                 )
                 // 토큰을 검사하는 커스텀 인증필터를 시큐리티에 등록
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

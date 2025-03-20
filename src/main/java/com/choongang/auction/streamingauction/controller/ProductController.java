@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.controller;
 
+import com.choongang.auction.streamingauction.config.FileUploadConfig;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductCreate;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductDTO;
 import com.choongang.auction.streamingauction.jwt.JwtTokenProvider;
@@ -13,6 +14,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.*;
 
 @RestController
@@ -23,7 +26,7 @@ public class ProductController {
 
     private final ProductService productService;
     private final JwtTokenProvider jwtTokenProvider;
-
+    private final FileUploadConfig fileUploadConfig;
     // 상품 등록 (form-data를 통한 파일 업로드 지원)
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @PreAuthorize("isAuthenticated()")
@@ -34,7 +37,7 @@ public class ProductController {
             @RequestParam("productStartingPrice") Long productStartingPrice,
             @RequestParam("productBidIncrement") Long productBidIncrement,
             @RequestParam("productBuyNowPrice") Long productBuyNowPrice,
-            @RequestParam(value = "images", required = false) MultipartFile[] files,
+            @RequestParam(value = "images", required = false) List<MultipartFile> files,
             @RequestHeader("Authorization") String authHeader) {
 
         // 토큰에서 사용자 이름 추출
@@ -45,23 +48,37 @@ public class ProductController {
         log.info("카테고리: {}", productCategory);
         log.info("가격 정보: 시작가={}, 입찰단위={}, 즉시구매가={}",
                 productStartingPrice, productBidIncrement, productBuyNowPrice);
-        log.info("이미지 파일 개수: {}", files != null ? files.length : 0);
+        log.info("이미지 파일 개수: {}", files != null ? files.size() : 0);
 
-        // 이미지 URL 생성 (실제 파일 저장은 하지 않음)
+        // 이미지 URL 생성 및 파일 저장
         List<String> imageUrls = new ArrayList<>();
-        if (files != null && files.length > 0) {
+        if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
-                    // 고유한 파일명 생성
-                    String originalFilename = file.getOriginalFilename();
-                    String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                    String newFilename = UUID.randomUUID().toString() + extension;
+                    try {
+                        // 고유한 파일명 생성
+                        String originalFilename = file.getOriginalFilename();
+                        String extension = originalFilename.substring(originalFilename.lastIndexOf("."));
+                        String newFilename = UUID.randomUUID().toString() + extension;
 
-                    // 파일은 저장하지 않고 URL만 생성
-                    String imageUrl = "/uploads/" + newFilename;
-                    imageUrls.add(imageUrl);
+                        // 저장 경로 설정 (FileUploadConfig에서 가져온 경로 사용)
+                        String uploadDir = fileUploadConfig.getLocation();
+                        File targetFile = new File(uploadDir + File.separator + newFilename);
 
-                    log.info("이미지 URL 생성: {}", imageUrl);
+                        // 파일 저장
+                        file.transferTo(targetFile);
+
+                        // URL 생성 (웹에서 접근 가능한 경로)
+                        String imageUrl = "/uploads/" + newFilename;
+                        imageUrls.add(imageUrl);
+
+                        log.info("이미지 저장 및 URL 생성: {}", imageUrl);
+                    } catch (IOException e) {
+                        log.error("파일 저장 중 오류 발생", e);
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(Map.of(
+                                "error", "파일 업로드 중 오류가 발생했습니다: " + e.getMessage()
+                        ));
+                    }
                 }
             }
         }
