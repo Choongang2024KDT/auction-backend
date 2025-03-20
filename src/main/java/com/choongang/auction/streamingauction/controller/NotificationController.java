@@ -1,7 +1,7 @@
 package com.choongang.auction.streamingauction.controller;
 
-import com.choongang.auction.streamingauction.domain.notification.dto.response.NotificationDto;
-import com.choongang.auction.streamingauction.domain.notification.entity.Notification;
+import com.choongang.auction.streamingauction.domain.dto.responseDto.NotificationDto;
+import com.choongang.auction.streamingauction.domain.entity.Notification;
 import com.choongang.auction.streamingauction.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

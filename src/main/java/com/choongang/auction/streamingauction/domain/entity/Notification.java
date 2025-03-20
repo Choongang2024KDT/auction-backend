@@ -1,4 +1,4 @@
-package com.choongang.auction.streamingauction.domain.notification.entity;
+package com.choongang.auction.streamingauction.domain.entity;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -30,7 +30,7 @@ public class Notification {
     private String link;
 
     @Column(nullable = false)
-    private boolean isRead = false; // 기본값: false
+    private boolean isRead;
 
     @CreationTimestamp
     private Timestamp createdAt;
