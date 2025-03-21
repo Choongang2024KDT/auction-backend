@@ -13,7 +13,7 @@ import java.sql.Timestamp;
 public class TradeRecordDTO {
     private Long tradeId;
     private String itemName;
-    private BigDecimal amount;
+    private Long amount;
     private Long productId; // 추후에 해당 상품 페이지로 이동 용도
     private Timestamp createdAt;
     private String opponentName;  // 상대방 이름 (판매자/구매자에 따라 다름)
