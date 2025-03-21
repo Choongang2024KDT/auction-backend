@@ -43,7 +43,7 @@ public class AuctionController {
     }
 
     // 판매자가 경매 종료 요청
-    @PostMapping("/closeAution")
+    @PostMapping("/closeAuction")
     public ResponseEntity<?> closeAuction(
            @RequestBody AuctionRequestDto auctionRequestDto
     ){
