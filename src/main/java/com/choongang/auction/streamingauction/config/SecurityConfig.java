@@ -37,8 +37,14 @@ public class SecurityConfig {
                         auth
                                 // '/api/auth'로 시작하는 요청은 인증을 필요로 하지 않음
                                 .requestMatchers("/api/auth/**").permitAll()
+
+                                //경매 ,채팅 요청 인증 필수
+                                .requestMatchers("/api/auction/**").authenticated()
+                                .requestMatchers("/api/chat/**").authenticated()
+
                                 // '/api'로 시작하는 요청은 모두 인증을 필수로 적용
                                 .requestMatchers("/api/**").permitAll()
+
                                 // 기타 등등 나머지(jsp, css, js, image...)는 모두 허용
                                 // 로그인이 안된 회원의 상품등록 요청을 막음
                                 .requestMatchers("/api/product/**").authenticated()
