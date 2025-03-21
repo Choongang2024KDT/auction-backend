@@ -2,14 +2,17 @@ package com.choongang.auction.streamingauction.domain.entity;
 
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Entity
-@Data
+@Getter
 @Table(name = "trade_record")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TradeRecord {
 
     @Id
