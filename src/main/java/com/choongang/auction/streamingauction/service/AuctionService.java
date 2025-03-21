@@ -5,17 +5,20 @@ import com.choongang.auction.streamingauction.domain.dto.responseDto.AuctionResp
 import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.domain.entity.Bid;
 import com.choongang.auction.streamingauction.domain.entity.Status;
+import com.choongang.auction.streamingauction.domain.entity.TradeRecord;
 import com.choongang.auction.streamingauction.domain.product.domain.dto.ProductDTO;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.choongang.auction.streamingauction.domain.product.mapper.ProductMapper;
 import com.choongang.auction.streamingauction.repository.AuctionRepository;
 import com.choongang.auction.streamingauction.repository.BidRepository;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
+import com.choongang.auction.streamingauction.repository.TradeRecordRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
@@ -29,6 +32,7 @@ public class AuctionService {
     private final ProductRepository productRepository;
     private final ProductMapper productMapper;
     private final BidRepository bidRepository;
+    private final TradeRecordRepository tradeRecordRepository;
 
     //경매 생성
     public AuctionResponseDto createAuction(AuctionRequestDto auctionRequestDto) {
@@ -131,6 +135,24 @@ public class AuctionService {
                 // 경매 종료 로그 추가
                 log.info("경매 종료됨. 상품 ID: {}, 종료 시간: {}", auctionRequestDto.productId(), auctionEntity.getEndTime());
 
+                // 최고 입찰자 조회 - 입찰 로직에 있지만 경매종료 2가지 조건에 따라 오버로딩으로 나누지 않는 상황이라면
+                // 일단 넣어두기
+                Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionEntity.getId());
+                if (highestBid == null) {
+                    log.info("종료된 경매에 입찰 내역이 없습니다. 상품 ID: {}", auctionRequestDto.productId());
+                } else {
+                    // TradeRecord 생성 및 저장
+                    TradeRecord tradeRecord = TradeRecord.builder()
+                            .itemName(auctionEntity.getProduct().getName()) // 상품 이름
+                            .amount(auctionEntity.getCurrentPrice())        // 낙찰 금액 (Auction의 현재가)
+                            .seller(auctionEntity.getProduct().getMember().getId())            // 판매자 ID
+                            .buyer(highestBid.getMember().getId())          // 낙찰자 ID (Bid에서)
+                            .productId(auctionRequestDto.productId())    // 상품 ID
+                            .build();
+
+                    tradeRecordRepository.save(tradeRecord);
+                    log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
+                }
                 // 후속 처리: 낙찰자에게 알림, 판매 상태로 변경 등 추가적인 로직 처리
                 // 예: notifyWinner(auctionEntity.getWinningUserName());
             },

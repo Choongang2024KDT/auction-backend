@@ -2,14 +2,18 @@ package com.choongang.auction.streamingauction.domain.entity;
 
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.math.BigDecimal;
 import java.sql.Timestamp;
 
 @Entity
-@Data
+@Getter
 @Table(name = "trade_record")
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class TradeRecord {
 
     @Id
@@ -23,7 +27,7 @@ public class TradeRecord {
 
     // 가격
     @Column(name = "amount", nullable = false)
-    private BigDecimal amount;
+    private Long amount;
 
     // 판매자 id
     @Column(name = "seller_id", nullable = false)
@@ -38,6 +42,7 @@ public class TradeRecord {
     private Long productId;
 
     // 생성 시간
-    @Column(name = "created_at", nullable = false)
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private Timestamp createdAt;
 }
