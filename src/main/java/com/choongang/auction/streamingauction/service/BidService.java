@@ -58,7 +58,7 @@ public class BidService {
 
         // BidResponseDto record를 사용하여 생성
         return new BidResponseDto(
-                highestBid.getMember().getUsername(),  // 최고 입찰자
+                highestBid.getMember().getName(),  // 최고 입찰자
                 highestBid.getBidAmount()           // 입찰 금액
         );
     }
