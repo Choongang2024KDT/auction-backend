@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.service;
 
+import com.choongang.auction.streamingauction.domain.dto.requestDto.AuctionRequestDto;
 import com.choongang.auction.streamingauction.domain.dto.requestDto.BidRequestDto;
 import com.choongang.auction.streamingauction.domain.dto.responseDto.BidResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Auction;
@@ -28,39 +29,69 @@ public class BidService {
     private final AuctionService auctionService;
     private final MemberRepository memberRepository;
 
-
-    //입찰 저장 후 입찰 내역 전송
+    // 입찰 저장 후 입찰 내역 전송
     public BidResponseDto saveAndGetMaxBid(BidRequestDto bidRequestDto) {
 
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
         Optional<Member> foundMember = memberRepository.findById(bidRequestDto.memberId()); //회원 조회
+        if (foundMember.isEmpty()) {
+            throw new RuntimeException("Member not found"); // 멤버가 없으면 예외 처리
+        }
         Member member = foundMember.get(); //회원 정보
-        //경매 현재가 업데이트
-        auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
-        //입찰 저장
+
+        // 입찰 entity 생성
         Bid bidEntity = Bid.builder()
                 .member(member)
                 .auction(foundAuction) //요청받은 id를 이용해 찾아낸 해당 경매를 설정 (fk로 auction_id가 설정되어 있어서 자동으로 입력해줌)
                 .bidAmount(bidRequestDto.bidAmount())
                 .build();
-        bidRepository.save(bidEntity);
-
-        //최고가 입찰내역 가져오기
+        //현재 최고가 조회
         Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(bidRequestDto.auctionId());
+        // 첫 입찰 시에는 최고가 조회시 null이기떄문에 바로 입찰 처리
         if (highestBid == null) {
-            return null;  // 최고가 입찰이 없다면 null 반환
+            log.info("No current bid found.");
+            //저장
+            bidRepository.save(bidEntity);
+            //경매 현재가 업데이트
+            auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
+            return new BidResponseDto(
+                    bidEntity.getMember().getName(),  // 최고 입찰자
+                    bidEntity.getBidAmount()           // 입찰 금액
+            );
         }
 
-        // 즉시입찰가보다 높은 금액일 때
+        // 즉시입찰가보다 높은 금액이 조회됐을 땐 경매 종료 + 현재 입찰 저장 x
         if (highestBid.getBidAmount() >= foundAuction.getProduct().getBuyNowPrice()){
-            log.info("입찰가가 즉시 입찰가를 넘어서 경매가 종료됩니다.");
+            log.info("이미 즉시 낙찰가가 있습니다.");
+            //경매 종료
+            auctionService.closeAuctionBySeller(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            // 조회된 최고 입찰자의 정보 반환
+            return new BidResponseDto(
+                    highestBid.getMember() != null ? highestBid.getMember().getName() : "Unknown",
+                    highestBid.getBidAmount()
+            );
+        } else if (bidEntity.getBidAmount() >= foundAuction.getProduct().getBuyNowPrice()) {
+        //즉시 낙찰 기록은 없지만 현재 입찰가가 즉시 낙찰이 가능한 경우
+            log.info("즉시 낙찰가보다 높은 금액으로 낙찰됐습니다.");
+            bidRepository.save(bidEntity);
+            //경매 현재가 업데이트
+            auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
+            //경매 종료
+            auctionService.closeAuctionBySeller(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            return new BidResponseDto(
+                    bidEntity.getMember().getName(),  // 최고 입찰자
+                    bidEntity.getBidAmount()           // 입찰 금액
+            );
+        } else {
+        // 조회 시 현재 즉시입찰이 안된 경우 입찰가 저장 + 경매 정보 업데이트 + 반환
+            bidRepository.save(bidEntity);
+            //경매 현재가 업데이트
+            auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
+            return new BidResponseDto(
+                    bidEntity.getMember().getName(),  // 최고 입찰자
+                    bidEntity.getBidAmount()           // 입찰 금액
+            );
         }
-
-        // BidResponseDto record를 사용하여 생성
-        return new BidResponseDto(
-                highestBid.getMember().getName(),  // 최고 입찰자
-                highestBid.getBidAmount()           // 입찰 금액
-        );
     }
 
     //입찰가 저장
