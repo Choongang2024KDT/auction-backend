@@ -103,9 +103,9 @@ public class MemberService {
 
         Member foundMember = memberRepository.findByUsername(username)
                 .orElseGet(() -> memberRepository.findByEmail(username)
-                                .orElseThrow(
-                                        () -> new MemberException(ErrorCode.MEMBER_NOT_FOUND)
-                                ));
+                        .orElseThrow(
+                                () -> new MemberException(ErrorCode.MEMBER_NOT_FOUND)
+                        ));
 
         // 사용자가 입력한 패스워드와 DB에 저장된 패스워드를 추출
         String inputPassword = loginRequest.getPassword();
@@ -122,9 +122,11 @@ public class MemberService {
                 "message", "로그인에 성공했습니다.",
                 "username", foundMember.getUsername(),
                 "name", foundMember.getName(), // 이름도 응답에 포함
+                "memberId", foundMember.getId(), // 회원 ID도 응답에 포함
                 "accessToken", jwtTokenProvider.createAccessToken(
                         foundMember.getUsername(),
-                        foundMember.getName()) // name도 함께 전달
+                        foundMember.getName(),
+                        foundMember.getId()) // memberId도 함께 전달
         );
     }
 }
