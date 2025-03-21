@@ -41,6 +41,7 @@ public class ChatService {
                 .member(member)
                 .auction(foundAuction)
                 .message(dto.message())
+                .sentAt(dto.sentAt())
                 .build();
         chatRepository.save(chatEntity);
     }
