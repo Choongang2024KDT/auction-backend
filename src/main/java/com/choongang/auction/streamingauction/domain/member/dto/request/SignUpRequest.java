@@ -17,6 +17,11 @@ public class SignUpRequest {
     @NotBlank(message = "이름을 입력해주세요.")
     private String name;
 
+    @NotBlank(message = "전화번호를 입력해주세요")
+    @Pattern(regexp = "^(01[016789])[0-9]{3,4}[0-9]{4}$",
+            message = "올바른 휴대폰 번호 형식이 아닙니다.")
+    private String phone;
+
     @NotBlank(message = "사용자 을 입력해주세요.")
     @Pattern(regexp = "^[a-zA-Z0-9._]{4,20}$",
             message = "아이디는 4-20자의 영문, 숫자 사용 가능합니다")
@@ -32,7 +37,7 @@ public class SignUpRequest {
 
         // 이메일과 휴대전화번호를 구분해서 처리
         String email = null;
-        String phone = null;
+
 
         if (this.email.contains("@")) {
             email = this.email;
@@ -42,6 +47,7 @@ public class SignUpRequest {
                 .email(email)
                 .username(this.username)
                 .name(this.name)
+                .phone(this.phone)
                 .password(this.password)
                 .build();
     }

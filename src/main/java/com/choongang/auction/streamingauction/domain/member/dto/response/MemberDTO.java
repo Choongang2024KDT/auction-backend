@@ -17,6 +17,7 @@ public class MemberDTO {
     private String username;
     private String email;
     private String name;
+    private String phone;
     private String role;
     private List<Long> productIds; // 관련 상품 ID 목록
     private LocalDateTime createdAt;

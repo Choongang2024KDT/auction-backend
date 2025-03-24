@@ -5,6 +5,7 @@ import com.choongang.auction.streamingauction.domain.member.dto.request.LoginReq
 import com.choongang.auction.streamingauction.domain.member.dto.request.SignUpRequest;
 import com.choongang.auction.streamingauction.domain.member.dto.response.DuplicateCheckResponse;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
+import com.choongang.auction.streamingauction.exception.AuthenticationException;
 import com.choongang.auction.streamingauction.exception.MemberException;
 import com.choongang.auction.streamingauction.exception.ErrorCode;
 import com.choongang.auction.streamingauction.jwt.JwtTokenProvider;
@@ -50,6 +51,10 @@ public class MemberService {
                 .ifPresent(m -> {
                     throw new MemberException(ErrorCode.DUPLICATE_USERNAME);
                 });
+        memberRepository.findByPhone(signUpRequest.getPhone())
+                .ifPresent(m -> {
+                    throw new MemberException(ErrorCode.DUPLICATE_PHONE);
+                });
 
         // 순수 비밀번호를 꺼내서 암호화
         String rawPassword = signUpRequest.getPassword();
@@ -68,7 +73,7 @@ public class MemberService {
     /**
      * 중복 검사 통합 처리 (이메일, 전화번호, 유저네임)
      *
-     * @param type - 검사할 값의 타입 (email, phone, username)
+     * @param type  - 검사할 값의 타입 (email, phone, username)
      * @param value - 실제로 중복을 검사할 값
      */
     public DuplicateCheckResponse checkDuplicate(String type, String value) {
@@ -81,6 +86,10 @@ public class MemberService {
             case "username":
                 return memberRepository.findByUsername(value)
                         .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 사용자 이름입니다."))
+                        .orElse(DuplicateCheckResponse.available());
+            case "phone":
+                return memberRepository.findByPhone(value)
+                        .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 전화번호 입니다,"))
                         .orElse(DuplicateCheckResponse.available());
             default:
                 throw new MemberException(ErrorCode.INVALID_SIGNUP_DATA);
@@ -104,7 +113,8 @@ public class MemberService {
         Member foundMember = memberRepository.findByUsername(username)
                 .orElseGet(() -> memberRepository.findByEmail(username)
                         .orElseThrow(
-                                () -> new MemberException(ErrorCode.MEMBER_NOT_FOUND)
+
+                                () -> new AuthenticationException(ErrorCode.UNAUTHORIZED, "아이디 또는 비밀번호가 일치하지 않습니다.")
                         ));
 
         // 사용자가 입력한 패스워드와 DB에 저장된 패스워드를 추출
@@ -114,7 +124,7 @@ public class MemberService {
         // 비번이 일치하지 않으면 예외 발생
         // 암호화된 비번을 디코딩해서 비교해야 함
         if (!passwordEncoder.matches(inputPassword, storedPassword)) {
-            throw new MemberException(ErrorCode.INVALID_PASSWORD);
+            throw new AuthenticationException(ErrorCode.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
         // 로그인이 성공했을 때 JSON 생성 (액세스토큰을 포함)

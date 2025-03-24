@@ -17,12 +17,9 @@ public interface MemberRepository
     // 중복 체크용 조회 메서드
     Optional<Member> findByEmail(String email);
     Optional<Member> findByUsername(String username);
+    Optional<Member> findByPhone(String phone);
 
-    // 이메일 존재 여부 확인
-    boolean existsByEmail(String email);
 
-    // 사용자명 존재 여부 확인
-    boolean existsByUsername(String username);
 
 
 }
