@@ -113,7 +113,8 @@ public class MemberService {
         Member foundMember = memberRepository.findByUsername(username)
                 .orElseGet(() -> memberRepository.findByEmail(username)
                         .orElseThrow(
-                                () -> new MemberException(ErrorCode.MEMBER_NOT_FOUND)
+
+                                () -> new AuthenticationException(ErrorCode.UNAUTHORIZED, "아이디 또는 비밀번호가 일치하지 않습니다.")
                         ));
 
         // 사용자가 입력한 패스워드와 DB에 저장된 패스워드를 추출
