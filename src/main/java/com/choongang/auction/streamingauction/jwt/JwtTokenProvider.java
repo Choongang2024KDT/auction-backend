@@ -1,6 +1,8 @@
 package com.choongang.auction.streamingauction.jwt;
 
 
+import com.choongang.auction.streamingauction.exception.AuthenticationException;
+import com.choongang.auction.streamingauction.exception.ErrorCode;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -76,12 +78,20 @@ public class JwtTokenProvider {
         try {
             parseClaims(token);
             return true;
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            log.warn("만료된 토큰: {}", e.getMessage());
+            throw new AuthenticationException(ErrorCode.EXPIRED_TOKEN);
+        } catch (io.jsonwebtoken.security.SignatureException e) {
+            log.warn("잘못된 JWT 서명: {}", e.getMessage());
+            throw new AuthenticationException(ErrorCode.INVALID_TOKEN, "잘못된 JWT 서명입니다.");
+        } catch (io.jsonwebtoken.MalformedJwtException e) {
+            log.warn("잘못된 JWT 토큰: {}", e.getMessage());
+            throw new AuthenticationException(ErrorCode.INVALID_TOKEN, "잘못된 형식의 JWT 토큰입니다.");
         } catch (JwtException | IllegalArgumentException e) {
-            log.warn("invalid token: {}", e.getMessage(), e);
-            return false;
+            log.warn("유효하지 않은 토큰: {}", e.getMessage());
+            throw new AuthenticationException(ErrorCode.INVALID_TOKEN);
         }
     }
-
     /**
      * 검증된 토큰에서 사용자이름을 추출하는 메서드
      * @param token - 인증 토큰

@@ -5,6 +5,7 @@ import com.choongang.auction.streamingauction.domain.member.dto.request.LoginReq
 import com.choongang.auction.streamingauction.domain.member.dto.request.SignUpRequest;
 import com.choongang.auction.streamingauction.domain.member.dto.response.DuplicateCheckResponse;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
+import com.choongang.auction.streamingauction.exception.AuthenticationException;
 import com.choongang.auction.streamingauction.exception.MemberException;
 import com.choongang.auction.streamingauction.exception.ErrorCode;
 import com.choongang.auction.streamingauction.jwt.JwtTokenProvider;
@@ -122,7 +123,7 @@ public class MemberService {
         // 비번이 일치하지 않으면 예외 발생
         // 암호화된 비번을 디코딩해서 비교해야 함
         if (!passwordEncoder.matches(inputPassword, storedPassword)) {
-            throw new MemberException(ErrorCode.INVALID_PASSWORD);
+            throw new AuthenticationException(ErrorCode.UNAUTHORIZED, "비밀번호가 일치하지 않습니다.");
         }
 
         // 로그인이 성공했을 때 JSON 생성 (액세스토큰을 포함)
