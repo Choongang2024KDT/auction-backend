@@ -68,7 +68,7 @@ public class MemberService {
     /**
      * 중복 검사 통합 처리 (이메일, 전화번호, 유저네임)
      *
-     * @param type - 검사할 값의 타입 (email, phone, username)
+     * @param type  - 검사할 값의 타입 (email, phone, username)
      * @param value - 실제로 중복을 검사할 값
      */
     public DuplicateCheckResponse checkDuplicate(String type, String value) {
@@ -81,6 +81,10 @@ public class MemberService {
             case "username":
                 return memberRepository.findByUsername(value)
                         .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 사용자 이름입니다."))
+                        .orElse(DuplicateCheckResponse.available());
+            case "password":
+                return memberRepository.findByPhone(value)
+                        .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 전화번호 입니다,"))
                         .orElse(DuplicateCheckResponse.available());
             default:
                 throw new MemberException(ErrorCode.INVALID_SIGNUP_DATA);

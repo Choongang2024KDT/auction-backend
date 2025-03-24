@@ -11,6 +11,7 @@ public record ParticipantDTO(
         Long memberId,
         String memberUsername,
         String memberName,
+        String memberPhone,
         Participant.ParticipantStatus status,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
@@ -24,6 +25,7 @@ public record ParticipantDTO(
                 participant.getMember().getId(),
                 participant.getMember().getUsername(),
                 participant.getMember().getName(),
+                participant.getMember().getPhone(),
                 participant.getStatus(),
                 participant.getCreatedAt(),
                 participant.getUpdatedAt()

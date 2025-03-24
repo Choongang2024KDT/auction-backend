@@ -26,6 +26,7 @@ public class MemberMapper {
                 .username(member.getUsername())
                 .email(member.getEmail())
                 .name(member.getName())
+                .phone(member.getPhone())
                 .role(member.getRole())
                 .productIds(productIds)
                 .createdAt(member.getCreatedAt())

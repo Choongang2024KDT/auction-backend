@@ -17,6 +17,7 @@ public interface MemberRepository
     // 중복 체크용 조회 메서드
     Optional<Member> findByEmail(String email);
     Optional<Member> findByUsername(String username);
+    Optional<Member> findByPhone(String phone);
 
 
 

@@ -37,6 +37,9 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String name;
 
+    @Column(nullable = true, length = 30)
+    private String phone;
+
     @Column(nullable = false, length = 20)
     private String role = "ROLE_USER";
 
@@ -58,10 +61,11 @@ public class Member {
     private LocalDateTime lastLoginAt;
 
     @Builder
-    private Member(String username, String password, String email,
+    private Member(String username, String password, String email, String phone,
                    String name) {
         this.username = username;
         this.password = password;
+        this.phone = phone;
         this.email = email;
         this.name = name;
     }
