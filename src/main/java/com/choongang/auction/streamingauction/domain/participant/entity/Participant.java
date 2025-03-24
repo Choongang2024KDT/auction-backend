@@ -37,13 +37,6 @@ public class Participant {
     @Column(name = "status")
     private ParticipantStatus status;
 
-    @CreationTimestamp
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     // 참가자 상태를 관리하는 Enum
     public enum ParticipantStatus {

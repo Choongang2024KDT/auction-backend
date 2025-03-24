@@ -19,6 +19,17 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     // 특정 회원이 특정 상품에 예약했는지 확인
     Optional<Participant> findByProduct_ProductIdAndMember_Id(Long productId, Long memberId);
 
+    // 특정 회원이 특정 상품에 특정 상태로 예약했는지 확인
+    Optional<Participant> findByProduct_ProductIdAndMember_IdAndStatus(
+            Long productId, Long memberId, Participant.ParticipantStatus status);
+
+    // 특정 회원이 특정 상품에 여러 상태 중 하나로 예약했는지 확인
+    @Query("SELECT p FROM Participant p WHERE p.product.productId = :productId AND p.member.id = :memberId AND p.status IN :statuses")
+    Optional<Participant> findByProduct_ProductIdAndMember_IdAndStatusIn(
+            @Param("productId") Long productId,
+            @Param("memberId") Long memberId,
+            @Param("statuses") List<Participant.ParticipantStatus> statuses);
+
     // 회원의 모든 예약 상품 조회
     @Query("SELECT p FROM Participant p JOIN FETCH p.product WHERE p.member.id = :memberId")
     List<Participant> findAllByMemberId(@Param("memberId") Long memberId);
@@ -30,8 +41,14 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
     // 상품별 참가자 수 카운트
     long countByProduct_ProductId(Long productId);
 
-    // 상품별 특정 상태의 참가자 카운트 (추가된 메서드)
+    // 상품별 특정 상태의 참가자 카운트
     long countByProduct_ProductIdAndStatus(Long productId, Participant.ParticipantStatus status);
+
+    // 상품별 여러 상태의 참가자 카운트
+    @Query("SELECT COUNT(p) FROM Participant p WHERE p.product.productId = :productId AND p.status IN :statuses")
+    long countByProduct_ProductIdAndStatusIn(
+            @Param("productId") Long productId,
+            @Param("statuses") List<Participant.ParticipantStatus> statuses);
 
     // 상태별 참가자 조회
     List<Participant> findByProduct_ProductIdAndStatus(Long productId, Participant.ParticipantStatus status);
