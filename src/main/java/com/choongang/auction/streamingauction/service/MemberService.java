@@ -50,6 +50,10 @@ public class MemberService {
                 .ifPresent(m -> {
                     throw new MemberException(ErrorCode.DUPLICATE_USERNAME);
                 });
+        memberRepository.findByPhone(signUpRequest.getPhone())
+                .ifPresent(m -> {
+                    throw new MemberException(ErrorCode.DUPLICATE_PHONE);
+                });
 
         // 순수 비밀번호를 꺼내서 암호화
         String rawPassword = signUpRequest.getPassword();
@@ -82,7 +86,7 @@ public class MemberService {
                 return memberRepository.findByUsername(value)
                         .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 사용자 이름입니다."))
                         .orElse(DuplicateCheckResponse.available());
-            case "password":
+            case "phone":
                 return memberRepository.findByPhone(value)
                         .map(m -> DuplicateCheckResponse.unavailable("이미 사용 중인 전화번호 입니다,"))
                         .orElse(DuplicateCheckResponse.available());

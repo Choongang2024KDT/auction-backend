@@ -37,7 +37,7 @@ public class Member {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(nullable = true, length = 30)
+    @Column(unique = true, length = 30)
     private String phone;
 
     @Column(nullable = false, length = 20)
