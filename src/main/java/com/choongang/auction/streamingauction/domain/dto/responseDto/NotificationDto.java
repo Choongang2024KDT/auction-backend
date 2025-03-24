@@ -1,13 +1,19 @@
 package com.choongang.auction.streamingauction.domain.dto.responseDto;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
-@Data
-@AllArgsConstructor
+@Getter
+@Setter
+@Builder
 @NoArgsConstructor
+@AllArgsConstructor
 public class NotificationDto {
+    private Long notificationId;
     private String message;
     private String link;
+    private boolean isRead;
+    private String createdAt;
+    private String safeNumber;
+
+    // expiresAt 보류
 }

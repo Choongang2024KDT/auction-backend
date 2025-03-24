@@ -1,44 +1,50 @@
 package com.choongang.auction.streamingauction.domain.entity;
 
+import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
 
-import java.sql.Timestamp;
+import java.time.LocalDateTime;
 
 @Entity
-@Data
+@Getter
+@Setter
+@Table(name = "notifications")
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 public class Notification {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long notificationId;
 
-    @Column(nullable = false)
-    private Long userId;
+    @ManyToOne
+    @JoinColumn(name = "member_id", nullable = false)
+    private Member member;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String message;
 
-    @Column(nullable = false)
+    @Column
     private String link;
 
     @Column(nullable = false)
     private boolean isRead;
 
-    @CreationTimestamp
-    private Timestamp createdAt;
+    @Column(columnDefinition = "DATETIME DEFAULT CURRENT_TIMESTAMP", updatable = false)
+    private LocalDateTime createdAt;
 
-    public Notification(Long userId, String message, String link) {
-        this.userId = userId;
-        this.message = message;
-        this.link = link;
-        this.createdAt = null;
+    private String safeNumber;
+
+    @Column(columnDefinition = "DATETIME")
+    private LocalDateTime expiresAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt == null) {
+            this.createdAt = LocalDateTime.now();
+        }
     }
 }
