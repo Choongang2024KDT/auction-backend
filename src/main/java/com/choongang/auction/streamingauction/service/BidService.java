@@ -47,7 +47,7 @@ public class BidService {
                 .build();
         //현재 최고가 조회
         Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(bidRequestDto.auctionId());
-        // 첫 입찰 시에는 최고가 조회시 null이기떄문에 바로 입찰 처리
+        // 첫 입찰 시에는 최고가 조회시 null 값이기 떄문에 바로 입찰 처리
         if (highestBid == null) {
             log.info("No current bid found.");
             //저장
@@ -64,7 +64,7 @@ public class BidService {
         if (highestBid.getBidAmount() >= foundAuction.getProduct().getBuyNowPrice()){
             log.info("이미 즉시 낙찰가가 있습니다.");
             //경매 종료
-            auctionService.closeAuctionBySeller(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            auctionService.closeAuctionByBuyer(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
             // 조회된 최고 입찰자의 정보 반환
             return new BidResponseDto(
                     highestBid.getMember() != null ? highestBid.getMember().getName() : "Unknown",
@@ -77,7 +77,7 @@ public class BidService {
             //경매 현재가 업데이트
             auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
             //경매 종료
-            auctionService.closeAuctionBySeller(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            auctionService.closeAuctionByBuyer(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
             return new BidResponseDto(
                     bidEntity.getMember().getName(),  // 최고 입찰자
                     bidEntity.getBidAmount()           // 입찰 금액
@@ -109,7 +109,7 @@ public class BidService {
     }
 
     //최고 입찰가 조회
-    //최고 입찰가 null상태일때 예외처리 후 controller로 반환
+    //최고 입찰가 null 상태일 때 예외처리 후 controller로 반환
     public BidResponseDto getMaxBid(Long auctionId) {
 
         Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionId);
