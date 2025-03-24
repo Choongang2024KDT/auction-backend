@@ -38,7 +38,6 @@ public class Chat {
     @Column(name = "message", nullable = false)
     private String message;
 
-    @CreationTimestamp
     @Column(name = "sent_at", updatable = false)
     private LocalDateTime sentAt;
 }

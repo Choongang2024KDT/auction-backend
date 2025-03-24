@@ -36,17 +36,17 @@ public class JwtTokenProvider {
 
     // 토큰 발급 로직
     // 액세스 토큰 생성 메서드 수정
-    public String createAccessToken(String username, String name) {
-        return createToken(username, name, jwtProperties.getAccessTokenValidityTime());
+    public String createAccessToken(String username, String name, Long memberId) {
+        return createToken(username, name, memberId, jwtProperties.getAccessTokenValidityTime());
     }
 
     // 리프레시 토큰 생성 메서드 수정
-    public String createRefreshToken(String username, String name) {
-        return createToken(username, name, jwtProperties.getRefreshTokenValidityTime());
+    public String createRefreshToken(String username, String name, Long memberId) {
+        return createToken(username, name, memberId, jwtProperties.getRefreshTokenValidityTime());
     }
 
     // 공통 토큰 생성 로직 수정
-    private String createToken(String username, String name, long validityTime) {
+    private String createToken(String username, String name, Long memberId, long validityTime) {
         // 현재 시간
         Date now = new Date();
         // 만료시간
@@ -55,11 +55,12 @@ public class JwtTokenProvider {
         // Claims 객체를 생성하여 name 정보 추가
         Claims claims = Jwts.claims().setSubject(username);
         claims.put("name", name); // 사용자 이름 추가
+        claims.put("memberId", memberId); // 회원 ID 추가
 
         // 서명을 넣어야 함
         return Jwts.builder()
-                .setClaims(claims) // claims 설정 (subject와 name 포함)
-                .setIssuer("Instagram clone")  // 발급자 정보
+                .setClaims(claims) // claims 설정 (subject와 name, memberId 포함)
+                .setIssuer("streaming-auction")  // 발급자 정보
                 .setIssuedAt(now) // 발급시간
                 .setExpiration(validity) // 만료시간
                 .signWith(key) // 서명 포함
@@ -79,16 +80,16 @@ public class JwtTokenProvider {
             log.warn("invalid token: {}", e.getMessage(), e);
             return false;
         }
-     }
+    }
 
     /**
      * 검증된 토큰에서 사용자이름을 추출하는 메서드
      * @param token - 인증 토큰
      * @return 토큰에서 추출한 사용자 이름
      */
-     public String getCurrentLoginUsername(String token) {
+    public String getCurrentLoginUsername(String token) {
         return parseClaims(token).getSubject();
-     }
+    }
 
     /**
      * 검증된 토큰에서 사용자 이름(name)을 추출하는 메서드
@@ -98,6 +99,16 @@ public class JwtTokenProvider {
     public String getCurrentUserName(String token) {
         return parseClaims(token).get("name", String.class);
     }
+
+    /**
+     * 검증된 토큰에서 회원 ID를 추출하는 메서드
+     * @param token - 인증 토큰
+     * @return 토큰에서 추출한 회원 ID
+     */
+    public Long getCurrentMemberId(String token) {
+        return parseClaims(token).get("memberId", Long.class);
+    }
+
     /**
      * 내부적으로 토큰을 파싱하여 Claims 객체를 반환하는 메서드입니다.
      *
@@ -112,5 +123,4 @@ public class JwtTokenProvider {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 }

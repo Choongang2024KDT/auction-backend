@@ -1,6 +1,6 @@
 package com.choongang.auction.streamingauction.repository;
 
-import com.choongang.auction.streamingauction.domain.notification.entity.Notification;
+import com.choongang.auction.streamingauction.domain.entity.Notification;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
