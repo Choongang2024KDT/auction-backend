@@ -33,6 +33,7 @@ public class AuctionService {
     private final ProductMapper productMapper;
     private final BidRepository bidRepository;
     private final TradeRecordRepository tradeRecordRepository;
+    private final NotificationService notificationService;
 
     //경매 생성
     public AuctionResponseDto createAuction(AuctionRequestDto auctionRequestDto) {
@@ -138,6 +139,10 @@ public class AuctionService {
                 // 최고 입찰자 조회 - 입찰 로직에 있지만 경매종료 2가지 조건에 따라 오버로딩으로 나누지 않는 상황이라면
                 // 일단 넣어두기
                 Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionEntity.getId());
+
+                Long sellerId = auctionEntity.getProduct().getMember().getId();
+                Long winnerId = highestBid.getMember().getId();
+
                 if (highestBid == null) {
                     log.info("종료된 경매에 입찰 내역이 없습니다. 상품 ID: {}", auctionRequestDto.productId());
                 } else {
@@ -145,8 +150,8 @@ public class AuctionService {
                     TradeRecord tradeRecord = TradeRecord.builder()
                             .itemName(auctionEntity.getProduct().getName()) // 상품 이름
                             .amount(auctionEntity.getCurrentPrice())        // 낙찰 금액 (Auction의 현재가)
-                            .seller(auctionEntity.getProduct().getMember().getId())            // 판매자 ID
-                            .buyer(highestBid.getMember().getId())          // 낙찰자 ID (Bid에서)
+                            .seller(sellerId)            // 판매자 ID
+                            .buyer(winnerId)          // 낙찰자 ID (Bid에서)
                             .productId(auctionRequestDto.productId())    // 상품 ID
                             .build();
 
@@ -154,7 +159,7 @@ public class AuctionService {
                     log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
                 }
                 // 후속 처리: 낙찰자에게 알림, 판매 상태로 변경 등 추가적인 로직 처리
-                // 예: notifyWinner(auctionEntity.getWinningUserName());
+                notificationService.handleAuctionEnd(auctionRequestDto.productId(), sellerId, winnerId);
             },
             () -> log.info("경매가 존재하지 않습니다. 상품 ID: {}", auctionRequestDto.productId()) // 경매가 없을 경우 로깅
         );
