@@ -6,6 +6,7 @@ import com.choongang.auction.streamingauction.jwt.JwtTokenProvider;
 import com.choongang.auction.streamingauction.service.NotificationService;
 import com.choongang.auction.streamingauction.service.SseEmitterService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -49,8 +51,8 @@ public class NotificationController {
     @PatchMapping("/{notificationId}/read")
     public ResponseEntity<Void> markAsRead(@PathVariable Long notificationId,
                                            @RequestHeader("Authorization") String authHeader) {
+        log.info("notificationId {}", notificationId);
         String token = authHeader.replace("Bearer ", "");
-        Long memberId = getMemberIdFromToken(token); // 토큰 검증 및 memberId 추출
         notificationService.markAsRead(notificationId); // memberId 검증은 서비스에서 처리 가능
         return ResponseEntity.ok().build();
     }

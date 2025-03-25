@@ -64,7 +64,7 @@ public class BidService {
         if (highestBid.getBidAmount() >= foundAuction.getProduct().getBuyNowPrice()){
             log.info("이미 즉시 낙찰가가 있습니다.");
             //경매 종료
-            auctionService.closeAuctionByBuyer(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            auctionService.closeAuctionByBuyer(foundAuction, highestBid);
             // 조회된 최고 입찰자의 정보 반환
             return new BidResponseDto(
                     highestBid.getMember() != null ? highestBid.getMember().getName() : "Unknown",
@@ -77,7 +77,7 @@ public class BidService {
             //경매 현재가 업데이트
             auctionService.updateAuctionCurrentPrice(foundAuction.getId() , bidRequestDto.bidAmount());
             //경매 종료
-            auctionService.closeAuctionByBuyer(new AuctionRequestDto(foundAuction.getProduct().getProductId()));
+            auctionService.closeAuctionByBuyer(foundAuction, highestBid);
             return new BidResponseDto(
                     bidEntity.getMember().getName(),  // 최고 입찰자
                     bidEntity.getBidAmount()           // 입찰 금액
