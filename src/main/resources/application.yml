@@ -10,6 +10,7 @@ spring:
     multipart:
       max-file-size: 10MB      # 단일 파일의 최대 크기
       max-request-size: 10MB
+
   #  mail:
   #    host: smtp.naver.com
   #    port: 465
