@@ -121,55 +121,60 @@ public class AuctionService {
 
         // 경매 정보가 없을 경우, 로깅 후 종료
         foundAuctionByProductId.ifPresentOrElse(
-            auctionEntity -> {
-                // 경매 상태가 이미 '완료'인 경우 처리 (중복 종료 방지)
-                if (auctionEntity.getStatus() == Status.COMPLETED) {
-                    log.info("이미 종료된 경매입니다. 상품 ID: {}", auctionRequestDto.productId());
-                       return;
+                auctionEntity -> {
+                    // 경매 상태가 이미 '완료'인 경우 처리 (중복 종료 방지)
+                    if (auctionEntity.getStatus() == Status.COMPLETED) {
+                        log.info("이미 종료된 경매입니다. 상품 ID: {}", auctionRequestDto.productId());
+                        return;
                     }
-                //판매자가 아닌 사용자가 경매를 종료요청하면 에러처리
-                if (!auctionEntity.getProduct().getMember().getId().equals(memberId)){
-                    throw new ForbiddenOperationException("판매자만 경매를 종료할 수 있습니다.");
+                    //판매자가 아닌 사용자가 경매를 종료요청하면 에러처리
+                    if (!auctionEntity.getProduct().getMember().getId().equals(memberId)) {
+                        throw new ForbiddenOperationException("판매자만 경매를 종료할 수 있습니다.");
+                    }
+
+                    // 최고 입찰자 조회 - 오버로딩이 안 된 상태에선 불가피 한듯..
+                    Bid highestBid = null;
+                    try {
+                        highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionEntity.getId());
+                    } catch (Exception e) {
+                        log.error("최고 입찰 조회 중 오류 발생. 경매 ID: {}, 오류: {}", auctionEntity.getId(), e.getMessage());
+                    }
+
+                    // 종료 시간 업데이트, 경매 상태 변경
+                    auctionEntity.setEndTime(LocalDateTime.now());
+                    auctionEntity.setStatus(Status.COMPLETED);
+
+                    // 경매 종료 처리 후 DB에 저장
+                    auctionRepository.save(auctionEntity);
+
+                    // 경매 종료 로그 추가
+                    log.info("경매 종료됨. 상품 ID: {}, 종료 시간: {}", auctionRequestDto.productId(), auctionEntity.getEndTime());
+
+                    // 최고 입찰자 조회 - 오버로딩이 안 된 상태에선 불가피 한듯..
+                    Long sellerId = auctionEntity.getProduct().getMember().getId();
+
+                    if (highestBid != null) {
+                        Long winnerId = highestBid.getMember().getId();
+
+                        TradeRecord tradeRecord = TradeRecord.builder()
+                                .itemName(auctionEntity.getProduct().getName())
+                                .amount(auctionEntity.getCurrentPrice())
+                                .seller(sellerId)
+                                .buyer(winnerId)
+                                .productId(auctionRequestDto.productId())
+                                .build();
+
+                        tradeRecordRepository.save(tradeRecord);
+                        log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
+
+                        notificationService.handleAuctionEnd(auctionRequestDto.productId(), sellerId, winnerId);
+                    } else {
+                        log.info("종료된 경매에 입찰 내역이 없습니다 또는 조회 실패. 상품 ID: {}", auctionRequestDto.productId());
+                    }
+                },
+                () -> {
+                    throw new AuctionNotFoundException("경매가 존재하지 않습니다.");
                 }
-
-                // 종료 시간 업데이트, 경매 상태 변경
-                auctionEntity.setEndTime(LocalDateTime.now());
-                auctionEntity.setStatus(Status.COMPLETED);
-
-                // 경매 종료 처리 후 DB에 저장
-                auctionRepository.save(auctionEntity);
-
-                // 경매 종료 로그 추가
-                log.info("경매 종료됨. 상품 ID: {}, 종료 시간: {}", auctionRequestDto.productId(), auctionEntity.getEndTime());
-
-                // 최고 입찰자 조회 - 입찰 로직에 있지만 경매종료 2가지 조건에 따라 오버로딩으로 나누지 않는 상황이라면
-                // 일단 넣어두기
-                Bid highestBid = bidRepository.findTopByAuctionIdOrderByBidAmountDesc(auctionEntity.getId());
-
-                Long sellerId = auctionEntity.getProduct().getMember().getId();
-                Long winnerId = highestBid.getMember().getId();
-
-                if (highestBid == null) {
-                    log.info("종료된 경매에 입찰 내역이 없습니다. 상품 ID: {}", auctionRequestDto.productId());
-                } else {
-                    // TradeRecord 생성 및 저장
-                    TradeRecord tradeRecord = TradeRecord.builder()
-                            .itemName(auctionEntity.getProduct().getName()) // 상품 이름
-                            .amount(auctionEntity.getCurrentPrice())        // 낙찰 금액 (Auction의 현재가)
-                            .seller(sellerId)            // 판매자 ID
-                            .buyer(winnerId)          // 낙찰자 ID (Bid에서)
-                            .productId(auctionRequestDto.productId())    // 상품 ID
-                            .build();
-
-                    tradeRecordRepository.save(tradeRecord);
-                    log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
-                }
-                // 후속 처리: 낙찰자에게 알림, 판매 상태로 변경 등 추가적인 로직 처리
-                notificationService.handleAuctionEnd(auctionRequestDto.productId(), sellerId, winnerId);
-            },
-            () -> {
-                throw new AuctionNotFoundException("경매가 존재하지 않습니다.");
-            } // 경매가 없을 경우 로깅
         );
     }
 
