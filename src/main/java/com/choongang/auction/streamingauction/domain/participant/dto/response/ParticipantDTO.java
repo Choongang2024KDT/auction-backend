@@ -12,9 +12,7 @@ public record ParticipantDTO(
         String memberUsername,
         String memberName,
         String memberPhone,
-        Participant.ParticipantStatus status,
-        LocalDateTime createdAt,
-        LocalDateTime updatedAt
+        Participant.ParticipantStatus status
 ) {
     // 간단한 생성을 위한 정적 팩토리 메서드
     public static ParticipantDTO from(Participant participant) {
@@ -26,9 +24,7 @@ public record ParticipantDTO(
                 participant.getMember().getUsername(),
                 participant.getMember().getName(),
                 participant.getMember().getPhone(),
-                participant.getStatus(),
-                participant.getCreatedAt(),
-                participant.getUpdatedAt()
+                participant.getStatus()
         );
     }
 }
