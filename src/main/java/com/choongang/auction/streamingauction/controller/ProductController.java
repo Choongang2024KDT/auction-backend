@@ -62,12 +62,10 @@ public class ProductController {
                         String newFilename = UUID.randomUUID().toString() + extension;
 
                         // 저장 경로 설정 (FileUploadConfig에서 가져온 경로 사용)
-//                        String uploadDir = fileUploadConfig.getLocation();
-//                        File targetFile = new File(uploadDir + File.separator + newFilename);
-
-                        //리눅스 경로 문제 명시적으로 적기
-                        String uploadDir = fileUploadConfig.getLocation().replace("\\", "/"); // 경로 내 \\를 /로 교체
-                        File targetFile = new File(uploadDir + "/" + newFilename);  // 리눅스에서는 /로 구분
+                        String uploadDir = fileUploadConfig.getLocation();
+                        log.info("업로드 경로: {}", uploadDir);  // 실제 경로 확인
+                        File targetFile = new File(uploadDir + File.separator + newFilename);
+                        log.info("파일 저장 경로: {}", targetFile.getAbsolutePath());  // 저장될 실제 파일 경로 확인
 
                         // 파일 저장
                         file.transferTo(targetFile);
