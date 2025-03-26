@@ -32,6 +32,7 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new RuntimeException("알림을 찾을 수 없음"));
         notification.setRead(true);
+        log.info("Mark as read: {}", notification.isRead());
     }
 
     @Transactional
