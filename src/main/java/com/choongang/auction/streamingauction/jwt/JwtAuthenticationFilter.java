@@ -34,13 +34,30 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 사용자가 전달한 토큰을 가져와야 함.
         String token;
-        if (isApiRequest(request)) {
-            // 요청헤더에 토큰을 들고다니는 경우 - API요청
-            token = resolveTokenFromHeader(request);
-        } else {
-            // 쿠키에 토큰을 들고다니는 경우 - 라우팅 요청
+
+        // 임시 코드
+        String requestURI = request.getRequestURI();
+
+        // 로그인/로그아웃은 쿠키에서 토큰 가져오기
+        if (requestURI.startsWith("/api/auth/login") || requestURI.startsWith("/api/auth/logout")) {
             token = resolveTokenFromCookie(request);
+            log.info("Logout token from cookie: {}", token);
+        } else {
+            token = resolveTokenFromHeader(request);
+            log.info("API token from header: {}", token);
         }
+
+
+        // 기존 코드
+//        if (isApiRequest(request)) {
+//            // 요청헤더에 토큰을 들고다니는 경우 - API요청
+//            log.info("요청헤더에 토큰을 들고다니는 경우 - API요청");
+//            token = resolveTokenFromHeader(request);
+//        } else {
+//            // 쿠키에 토큰을 들고다니는 경우 - 라우팅 요청
+//            log.info("쿠키에 토큰을 들고다니는 경우 - 라우팅 요청");
+//            token = resolveTokenFromCookie(request);
+//        }
 
         // 토큰 유효성 검증 및 토큰이 유효하다면 스프링에게 유효하다는 정보를 전달
         validateAndAuthenticate(token);
@@ -63,12 +80,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             // 토큰에서 사용자 정보(username과 memberId) 추출
             String username = tokenProvider.getCurrentLoginUsername(token);
             Long memberId = tokenProvider.getCurrentMemberId(token);
+            log.info("getCurrentMemberId: {}", memberId.toString());
 
             // TokenUserInfo 객체 생성
             TokenUserInfo tokenUserInfo = TokenUserInfo.builder()
                     .userName(username)
                     .memberId(memberId)
                     .build();
+            log.info("tokenUserInfo: {} {}", tokenUserInfo.userName(), tokenUserInfo.memberId());
 
             // Spring Security에게 접근을 허용하라고 명령
             // Authentication 객체 생성 → SecurityContextHolder에 저장
@@ -113,6 +132,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .orElse(null);
         }
 
+        log.info("resolveTokenFromCookie: no cookie found");
         return null;
     }
 
