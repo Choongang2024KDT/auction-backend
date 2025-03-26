@@ -41,7 +41,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         // 로그인/로그아웃은 쿠키에서 토큰 가져오기
         if (requestURI.startsWith("/api/auth/login") || requestURI.startsWith("/api/auth/logout")) {
             token = resolveTokenFromCookie(request);
-            log.info("Logout token from cookie: {}", token);
+            log.info("token from cookie: {}", token);
         } else {
             token = resolveTokenFromHeader(request);
             log.info("API token from header: {}", token);

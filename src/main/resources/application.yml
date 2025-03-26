@@ -12,7 +12,7 @@ spring:
       max-request-size: 10MB
   mvc:
     async:
-      request-timeout: 60000
+      request-timeout: 60000  # 비동기 요청 타임아웃
   #  mail:
   #    host: smtp.naver.com
   #    port: 465

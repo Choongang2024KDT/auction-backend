@@ -175,6 +175,35 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 
+    @ExceptionHandler(AsyncRequestTimeoutException.class)
+    public Object handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpServletRequest request) {
+        log.debug("AsyncRequestTimeoutException occurred: {}", ex.getMessage());
+
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
+            SseEmitter emitter = new SseEmitter();
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("timeout")
+                        .data("Connection timed out"));
+                emitter.complete();
+            } catch (IOException e) {
+                log.error("Failed to send SSE timeout event: {}", e.getMessage());
+                emitter.completeWithError(e);
+            }
+            return emitter;
+        }
+
+        // SSE가 아닌 경우 일반 응답
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.REQUEST_TIMEOUT.value())
+                .error(HttpStatus.REQUEST_TIMEOUT.name())
+                .message("Request timed out")
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(response);
+    }
+
     // HttpMessageNotWritableException 처리 (SSE에서 JSON 변환 불가 시 발생)
     @ExceptionHandler(HttpMessageNotWritableException.class)
     public Object handleHttpMessageNotWritableException(HttpMessageNotWritableException ex, HttpServletRequest request) {

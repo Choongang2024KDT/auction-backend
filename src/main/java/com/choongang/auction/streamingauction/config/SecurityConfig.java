@@ -4,6 +4,7 @@ import com.choongang.auction.streamingauction.jwt.JwtAuthenticationFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -35,22 +36,26 @@ public class SecurityConfig {
                 // 인가 설정
                 .authorizeHttpRequests(auth ->
                         auth
-                                // '/api/auth'로 시작하는 요청은 인증을 필요로 하지 않음
-                                .requestMatchers("/api/auth/**").permitAll()
+                                // 위에부터 검사하므로 구체적인걸 위에
+                                // 아래로 갈 수록 덜 구체적인 규칙
 
-                                //경매 ,채팅 요청 인증 필수
+                                // 인증이 필요한 요청들
+                                .requestMatchers("/api/auth/logout").authenticated()  // 로그아웃은 인증 필요
                                 .requestMatchers("/api/auction/**").authenticated()
                                 .requestMatchers("/api/chat/**").authenticated()
+                                .requestMatchers("/api/notifications/**").authenticated()
+                                .requestMatchers("/api/tradeRecord/**").authenticated()
+                                .requestMatchers(HttpMethod.DELETE, "/api/product/{id}").hasRole("ADMIN") // 관리자만 상품 삭제 가능. hasRole() 메서드는 ROLE_ 접두어를 자동으로 추가
 
-                                // '/api'로 시작하는 요청은 모두 인증을 필수로 적용
-                                .requestMatchers("/api/**").permitAll()
+                                // 인증 없이 허용할 요청들
+                                .requestMatchers("/api/auth/**").permitAll() // 로그아웃 제외 나머지
+                                .requestMatchers(HttpMethod.GET, "/api/product/{id}").permitAll()   // 특정 상품 조회
+                                .requestMatchers("/api/product/all").permitAll()   // 전체 상품 조회
+                                .requestMatchers("/api/product/category/**").permitAll() // 카테고리별 조회
+                                .requestMatchers("/api/product/user/**").permitAll() // 특정 회원 상품 조회
 
                                 // 기타 등등 나머지(jsp, css, js, image...)는 모두 허용
-                                // 로그인이 안된 회원의 상품등록 요청을 막음
-                                .requestMatchers("/api/product/**").authenticated()
                                 .anyRequest().permitAll()
-
-
                 )
                 // 토큰을 검사하는 커스텀 인증필터를 시큐리티에 등록
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)
