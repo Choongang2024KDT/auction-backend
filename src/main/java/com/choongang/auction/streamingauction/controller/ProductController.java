@@ -66,7 +66,7 @@ public class ProductController {
 //                        File targetFile = new File(uploadDir + File.separator + newFilename);
 
                         //리눅스 경로 문제 명시적으로 적기
-                        String uploadDir = fileUploadConfig.getLocation();  // 경로를 가져옴
+                        String uploadDir = fileUploadConfig.getLocation().replace("\\", "/"); // 경로 내 \\를 /로 교체
                         File targetFile = new File(uploadDir + "/" + newFilename);  // 리눅스에서는 /로 구분
 
                         // 파일 저장
