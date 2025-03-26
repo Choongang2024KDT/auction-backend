@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.jwt;
 
+import com.choongang.auction.streamingauction.jwt.entity.TokenUserInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -55,30 +56,33 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param token JWT 토큰 문자열
      */
     private void validateAndAuthenticate(String token) {
-
         log.debug("parsed token: {}", token);
 
         // 토큰이 존재하고, 유효성 검증에 통과하면 인증 처리
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
-            // 토큰이 유효하므로, 토큰에서 사용자 이름 추출
+            // 토큰에서 사용자 정보(username과 memberId) 추출
             String username = tokenProvider.getCurrentLoginUsername(token);
-            String name = tokenProvider.getCurrentUserName(token);
+            Long memberId = tokenProvider.getCurrentMemberId(token);
 
+            // TokenUserInfo 객체 생성
+            TokenUserInfo tokenUserInfo = TokenUserInfo.builder()
+                    .userName(username)
+                    .memberId(memberId)
+                    .build();
 
             // Spring Security에게 접근을 허용하라고 명령
             // Authentication 객체 생성 → SecurityContextHolder에 저장
-            Authentication authentication =
-                    /*
-                        첫번째 파라미터: 인증된 사용자의 이름이 저장 - 컨트롤러들이 빼서 사용할 수 있음
-                        두번째 파라미터: 비밀번호를 저장 (일반적으로 저장하지 않음)
-                        세번째 파라미터: 권한정보를 저장 (나중에 인가 처리시 사용)
-                     */
-                    new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    tokenUserInfo, // 인증된 사용자 정보 객체
+                    null,
+                    new ArrayList<>()
+            );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            log.info("authentication success: username - {}", username);
+            log.info("authentication success: user - {}, memberId - {}", username, memberId);
         }
     }
+
 
 
 
