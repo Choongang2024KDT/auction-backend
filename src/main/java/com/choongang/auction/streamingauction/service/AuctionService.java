@@ -56,6 +56,11 @@ public class AuctionService {
         Auction auctionEntity = Auction.builder()
                 .product(foundProduct)
                 .build();
+
+
+        // 이제 양방향 관계 설정을 위해 헬퍼 메소드 사용
+        auctionEntity.setProduct(foundProduct);
+
         // 경매 저장
         Auction savedAuction = auctionRepository.save(auctionEntity);
 

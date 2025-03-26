@@ -48,4 +48,12 @@ public class Auction {
         }
     }
 
+    public void setProduct(Product product) {
+        this.product = product;
+        // 양방향 관계가 유지되도록 보장
+        if (product != null && product.getAuction() != this) {
+            product.setAuction(this);
+        }
+    }
+
 }
