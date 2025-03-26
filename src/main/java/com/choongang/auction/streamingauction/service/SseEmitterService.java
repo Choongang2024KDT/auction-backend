@@ -22,18 +22,19 @@ public class SseEmitterService {
     private final Map<String, SseEmitter> emitters = new ConcurrentHashMap<>();
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1); // 단일 스레드 풀
 
+    // heartbeat 주기 설정
     @PostConstruct
     public void init() {
-        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 10, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 30, TimeUnit.SECONDS);
     }
 
-    public synchronized SseEmitter createEmitter(Long memberId, boolean unreadOnly) {
+    public SseEmitter createEmitter(Long memberId, boolean unreadOnly) {
         String key = getEmitterKey(memberId, unreadOnly);
 ;
         log.info("Initial emitters: {} terminated", emitters.keySet());
 
         // 기존 emitter 종료
-        SseEmitter oldEmitter = emitters.remove(key);
+        SseEmitter oldEmitter = emitters.get(key);
         if (oldEmitter != null) {
             oldEmitter.complete();
             log.info("Old emitter for key: {} terminated", key);
@@ -58,16 +59,22 @@ public class SseEmitterService {
         // 클린업 처리
         // SseEmitter 객체가 더 이상 필요 없어질 때(연결이 끝나거나 문제가 생길 때) 서버에서 리소스를 정리하는 코드
         emitter.onCompletion(() -> {
-            emitters.remove(key);
-            log.info("Emitter completed for key: {}", key);
+            if (emitters.get(key) == emitter) { // 현재 emitter가 나인지 확인
+                emitters.remove(key);
+                log.info("Emitter completed for key: {}", key);
+            }
         });
         emitter.onTimeout(() -> {
-            emitters.remove(key);
-            log.info("Emitter timed out for key: {}", key);
+            if (emitters.get(key) == emitter) {
+                emitters.remove(key);
+                log.info("Emitter timed out for key: {}", key);
+            }
         });
         emitter.onError(e -> {
-            emitters.remove(key);
-            log.error("Emitter error for key: {}", key, e);
+            if (emitters.get(key) == emitter) {
+                emitters.remove(key);
+                log.error("Emitter error for key: {}", key, e);
+            }
         });
 
         return emitter;
@@ -140,17 +147,32 @@ public class SseEmitterService {
     private void sendHeartbeats() {
         emitters.forEach((key, emitter) -> {
             try {
-                log.info("Sending heartbeat for key: {}", key);
-                emitter.send(SseEmitter.event().name("heartbeat").data("ping"));
+                // emitter가 이미 완료되었는지 확인
+                if (emitter != null) {
+                    log.debug("Sending heartbeat for key: {}", key);
+                    emitter.send(SseEmitter.event().name("heartbeat").data("ping"));
+                }
             } catch (IOException e) {
-                log.error("Failed to send heartbeat for key: {}", key, e);
-                emitter.complete();
+                log.info("Client disconnected for key: {}. Cleaning up emitter.", key);
+                if (emitter != null) {
+                    try {
+                        emitter.complete();
+                    } catch (IllegalStateException ise) {
+                        // 이미 완료된 경우 무시
+                        log.debug("Emitter already completed for key: {}", key);
+                    }
+                    emitters.remove(key);
+                }
+            } catch (IllegalStateException e) {
+                // 이미 완료된 emitter에 대한 예외 처리
+                log.debug("Heartbeat skipped for already completed emitter: {}", key);
                 emitters.remove(key);
             }
         });
     }
 
     public void sendNotification(Long memberId, Notification notification) {
+        log.info("sendHeartbeats to emitters {}", emitters.keySet());
         sendToEmitter(memberId, notification, false); // 모든 알림
         if (!notification.isRead()) {
             sendToEmitter(memberId, notification, true); // 읽지 않은 알림
@@ -175,6 +197,30 @@ public class SseEmitterService {
 
     private String getEmitterKey(Long memberId, boolean unreadOnly) {
         return memberId + (unreadOnly ? "_unread" : "_all");
+    }
+
+    // 클라이언트에서 로그아웃 시 SSE종료된 이후 emitter 제어하는게 나을 것 같아서 추가
+    public void disconnectOnLogout(Long memberId) {
+        String allKey = getEmitterKey(memberId, false);
+        String unreadKey = getEmitterKey(memberId, true);
+        SseEmitter allEmitter = emitters.remove(allKey);
+        SseEmitter unreadEmitter = emitters.remove(unreadKey);
+        if (allEmitter != null) {
+            try {
+                allEmitter.complete();
+                log.info("Emitter for key: {} terminated on logout", allKey);
+            } catch (IllegalStateException e) {
+                log.debug("Emitter already completed for key: {}", allKey);
+            }
+        }
+        if (unreadEmitter != null) {
+            try {
+                unreadEmitter.complete();
+                log.info("Emitter for key: {} terminated on logout", unreadKey);
+            } catch (IllegalStateException e) {
+                log.debug("Emitter already completed for key: {}", unreadKey);
+            }
+        }
     }
 
     private NotificationDto toDto(Notification notification) {

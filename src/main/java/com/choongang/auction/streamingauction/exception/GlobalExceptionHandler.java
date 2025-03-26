@@ -3,10 +3,14 @@ package com.choongang.auction.streamingauction.exception;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotWritableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.context.request.async.AsyncRequestNotUsableException;
+import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
@@ -139,5 +143,65 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(response);
+    }
+
+    // AsyncRequestNotUsableException 처리 (SSE 연결 종료 후 발생)
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public Object handleAsyncRequestNotUsableException(AsyncRequestNotUsableException ex, HttpServletRequest request) {
+        log.debug("AsyncRequestNotUsableException occurred: {}", ex.getMessage());
+
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
+            SseEmitter emitter = new SseEmitter();
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("Connection closed due to server state"));
+                emitter.complete();
+            } catch (IOException e) {
+                log.error("Failed to send SSE error event: {}", e.getMessage());
+                emitter.completeWithError(e);
+            }
+            return emitter;
+        }
+
+        // SSE가 아닌 경우 일반 에러 응답
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .message("Request not usable due to server error")
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+    }
+
+    // HttpMessageNotWritableException 처리 (SSE에서 JSON 변환 불가 시 발생)
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public Object handleHttpMessageNotWritableException(HttpMessageNotWritableException ex, HttpServletRequest request) {
+        log.debug("HttpMessageNotWritableException occurred: {}", ex.getMessage());
+
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
+            SseEmitter emitter = new SseEmitter();
+            try {
+                emitter.send(SseEmitter.event()
+                        .name("error")
+                        .data("Server cannot process this response"));
+                emitter.complete();
+            } catch (IOException e) {
+                log.error("Failed to send SSE error event: {}", e.getMessage());
+                emitter.completeWithError(e);
+            }
+            return emitter;
+        }
+
+        // SSE가 아닌 경우 일반 에러 응답
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .message("Response could not be written")
+                .path(request.getRequestURI())
+                .build();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
     }
 }
