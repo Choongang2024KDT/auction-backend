@@ -52,6 +52,7 @@ public class ProductController {
 
         // 이미지 URL 생성 및 파일 저장
         List<String> imageUrls = new ArrayList<>();
+        log.info(imageUrls.toString()); // 리눅스 파일 경로 확인을 위한 로그
         if (files != null && !files.isEmpty()) {
             for (MultipartFile file : files) {
                 if (!file.isEmpty()) {
