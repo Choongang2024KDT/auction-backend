@@ -1,6 +1,9 @@
 package com.choongang.auction.streamingauction.exception;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -20,7 +23,9 @@ import java.util.Map;
 // API에서 발생한 모든 에러들을 모아서 일괄 처리
 @ControllerAdvice
 @Slf4j
+@RequiredArgsConstructor
 public class GlobalExceptionHandler {
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     // 알 수 없는 기타 등등 에러를 일괄 처리
     @ExceptionHandler(Exception.class)
@@ -145,92 +150,103 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    // AsyncRequestNotUsableException 처리 (SSE 연결 종료 후 발생)
-    @ExceptionHandler(AsyncRequestNotUsableException.class)
-    public Object handleAsyncRequestNotUsableException(AsyncRequestNotUsableException ex, HttpServletRequest request) {
-        log.debug("AsyncRequestNotUsableException occurred: {}", ex.getMessage());
-
-        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
-            SseEmitter emitter = new SseEmitter();
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("error")
-                        .data("Connection closed due to server state"));
-                emitter.complete();
-            } catch (IOException e) {
-                log.error("Failed to send SSE error event: {}", e.getMessage());
-                emitter.completeWithError(e);
-            }
-            return emitter;
-        }
-
-        // SSE가 아닌 경우 일반 에러 응답
-        ErrorResponse response = ErrorResponse.builder()
-                .timestamp(LocalDateTime.now())
-                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                .error(HttpStatus.INTERNAL_SERVER_ERROR.name())
-                .message("Request not usable due to server error")
-                .path(request.getRequestURI())
-                .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
-    }
-
     @ExceptionHandler(AsyncRequestTimeoutException.class)
-    public Object handleAsyncRequestTimeoutException(AsyncRequestTimeoutException ex, HttpServletRequest request) {
+    public void handleAsyncRequestTimeoutException(
+            AsyncRequestTimeoutException ex,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         log.debug("AsyncRequestTimeoutException occurred: {}", ex.getMessage());
-
         if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
-            SseEmitter emitter = new SseEmitter();
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("timeout")
-                        .data("Connection timed out"));
-                emitter.complete();
-            } catch (IOException e) {
-                log.error("Failed to send SSE timeout event: {}", e.getMessage());
-                emitter.completeWithError(e);
-            }
-            return emitter;
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+            response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+            response.getOutputStream().flush(); // 응답을 즉시 커밋
+            return; // void 반환으로 후속 처리 중단
         }
-
-        // SSE가 아닌 경우 일반 응답
-        ErrorResponse response = ErrorResponse.builder()
+        // SSE가 아닌 경우 일반 에러 응답
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.REQUEST_TIMEOUT.value())
                 .error(HttpStatus.REQUEST_TIMEOUT.name())
                 .message("Request timed out")
                 .path(request.getRequestURI())
                 .build();
-        return ResponseEntity.status(HttpStatus.REQUEST_TIMEOUT).body(response);
+        response.setStatus(HttpStatus.REQUEST_TIMEOUT.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse)); // JSON 응답 작성
+        response.getWriter().flush();
     }
 
-    // HttpMessageNotWritableException 처리 (SSE에서 JSON 변환 불가 시 발생)
-    @ExceptionHandler(HttpMessageNotWritableException.class)
-    public Object handleHttpMessageNotWritableException(HttpMessageNotWritableException ex, HttpServletRequest request) {
-        log.debug("HttpMessageNotWritableException occurred: {}", ex.getMessage());
-
+    // AsyncRequestNotUsableException 처리
+    @ExceptionHandler(AsyncRequestNotUsableException.class)
+    public void handleAsyncRequestNotUsableException(
+            AsyncRequestNotUsableException ex,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        log.debug("AsyncRequestNotUsableException occurred: {}", ex.getMessage());
         if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
-            SseEmitter emitter = new SseEmitter();
-            try {
-                emitter.send(SseEmitter.event()
-                        .name("error")
-                        .data("Server cannot process this response"));
-                emitter.complete();
-            } catch (IOException e) {
-                log.error("Failed to send SSE error event: {}", e.getMessage());
-                emitter.completeWithError(e);
-            }
-            return emitter;
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+            response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+            response.getOutputStream().flush(); // 응답 커밋
+            return; // 후속 처리 중단
         }
-
         // SSE가 아닌 경우 일반 에러 응답
-        ErrorResponse response = ErrorResponse.builder()
+        ErrorResponse errorResponse = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                .error(HttpStatus.INTERNAL_SERVER_ERROR.name())
+                .message("Request not usable due to server error")
+                .path(request.getRequestURI())
+                .build();
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        response.getWriter().flush();
+    }
+
+    // HttpMessageNotWritableException 처리
+    @ExceptionHandler(HttpMessageNotWritableException.class)
+    public void handleHttpMessageNotWritableException(
+            HttpMessageNotWritableException ex,
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
+        log.debug("HttpMessageNotWritableException occurred: {}", ex.getMessage());
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
+            response.setStatus(HttpStatus.NO_CONTENT.value());
+            response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+            response.getOutputStream().flush(); // 응답 커밋
+            return; // 후속 처리 중단
+        }
+        // SSE가 아닌 경우 일반 에러 응답
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
                 .error(HttpStatus.INTERNAL_SERVER_ERROR.name())
                 .message("Response could not be written")
                 .path(request.getRequestURI())
                 .build();
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        response.setStatus(HttpStatus.INTERNAL_SERVER_ERROR.value());
+        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+        response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        response.getWriter().flush();
+    }
+
+    // AuthorizationDeniedException 처리
+    @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
+    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+            org.springframework.security.authorization.AuthorizationDeniedException e,
+            HttpServletRequest request) {
+        log.info("권한 거부 오류 발생: {}", e.getMessage(), e);
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(HttpStatus.FORBIDDEN.value())
+                .error(HttpStatus.FORBIDDEN.name())
+                .message("접근 거부: " + e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(HttpStatus.FORBIDDEN)
+                .body(response);
     }
 }

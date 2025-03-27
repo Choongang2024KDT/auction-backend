@@ -66,7 +66,11 @@ public class SecurityConfig {
                     ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
                 )
 
-                ;
+                // SSE를 위한 비동기 요청 설정
+                .requestCache(cache -> cache.disable()) // 캐시 비활성화로 재요청 문제 방지
+                .headers(headers -> headers
+                        .cacheControl(cache -> cache.disable()) // 캐시 제어 비활성화
+                );
 
         return http.build();
     }

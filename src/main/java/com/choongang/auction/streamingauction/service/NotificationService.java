@@ -31,9 +31,14 @@ public class NotificationService {
     }
 
     @Transactional
-    public void markAsRead(Long notificationId) {
+    public void markAsRead(Long notificationId, Long memberId) {
         Notification notification = notificationRepository.findById(notificationId)
                 .orElseThrow(() -> new IllegalArgumentException("알림 ID " + notificationId + "를 찾을 수 없습니다."));
+        // memberId 검증
+        if (!notification.getMember().getId().equals(memberId)) {
+            throw new SecurityException("해당 알림에 대한 권한이 없습니다");
+        }
+
         notification.setRead(true);
         log.info("Mark as read: {}", notification.isRead());
     }

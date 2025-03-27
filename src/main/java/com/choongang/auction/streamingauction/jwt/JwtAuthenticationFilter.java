@@ -59,8 +59,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 //            token = resolveTokenFromCookie(request);
 //        }
 
+
         // 토큰 유효성 검증 및 토큰이 유효하다면 스프링에게 유효하다는 정보를 전달
         validateAndAuthenticate(token);
+
 
         // 다음 필터로 넘어가기
         filterChain.doFilter(request, response);

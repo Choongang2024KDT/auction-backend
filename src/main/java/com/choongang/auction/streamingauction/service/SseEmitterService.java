@@ -25,11 +25,11 @@ public class SseEmitterService {
     // heartbeat 주기 설정
     @PostConstruct
     public void init() {
-        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 30, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 20, TimeUnit.SECONDS);
     }
 
-    public SseEmitter createEmitter(Long memberId, boolean unreadOnly) {
-        String key = getEmitterKey(memberId, unreadOnly);
+    public SseEmitter createEmitter(Long memberId) {
+        String key = getEmitterKey(memberId);
 ;
         log.info("Initial emitters: {} terminated", emitters.keySet());
 
@@ -41,11 +41,12 @@ public class SseEmitterService {
         }
 
         // 새 emitter
-        SseEmitter emitter = new SseEmitter(180_000L); // 타임아웃 180초
+        SseEmitter emitter = new SseEmitter(600_000L); // 타임아웃 10분
         emitters.put(key, emitter);
         log.info("Created emitter for key: {}, Current emitters map: {}", key, emitters.keySet());
 
         // 초기 연결 확인용 이벤트
+        // 아무 데이터도 넣지 않으면 503 Service Unavailable 에러가 발생
         try {
             emitter.send(SseEmitter.event().name("connect").data("SSE connected"));
             log.info("Initial connect event sent ...");
@@ -67,14 +68,16 @@ public class SseEmitterService {
         emitter.onTimeout(() -> {
             if (emitters.get(key) == emitter) {
                 emitters.remove(key);
-                log.info("Emitter timed out for key: {}", key);
+                log.debug("Emitter timed out for key: {}", key);
             }
+            emitter.complete();
         });
         emitter.onError(e -> {
             if (emitters.get(key) == emitter) {
                 emitters.remove(key);
                 log.error("Emitter error for key: {}", key, e);
             }
+            emitter.completeWithError(e);
         });
 
         return emitter;
@@ -172,53 +175,35 @@ public class SseEmitterService {
     }
 
     public void sendNotification(Long memberId, Notification notification) {
-        log.info("sendHeartbeats to emitters {}", emitters.keySet());
-        sendToEmitter(memberId, notification, false); // 모든 알림
-        if (!notification.isRead()) {
-            sendToEmitter(memberId, notification, true); // 읽지 않은 알림
-        }
-        log.info("{}번 회원에게 알림번호{} 전송", memberId, notification);
-    }
-
-    private void sendToEmitter(Long memberId, Notification notification, boolean unreadOnly) {
-        String key = getEmitterKey(memberId, unreadOnly);
+        String key = getEmitterKey(memberId);
         SseEmitter emitter = emitters.get(key);
         if (emitter != null) {
             try {
                 NotificationDto dto = toDto(notification);
                 emitter.send(SseEmitter.event().name("notification").data(dto));
+                log.info("{}번 회원에게 알림번호 {} 전송", memberId, notification.getNotificationId());
             } catch (IOException e) {
-                log.error("Failed to send SSE notification for memberId: {}, unreadOnly: {}", memberId, unreadOnly, e);
+                log.error("Failed to send SSE notification for memberId: {}", memberId, e);
                 emitters.remove(key);
                 throw new SseException(ErrorCode.NOTIFICATION_SEND_FAILED, "Notification send failed");
             }
         }
     }
 
-    private String getEmitterKey(Long memberId, boolean unreadOnly) {
-        return memberId + (unreadOnly ? "_unread" : "_all");
+    private String getEmitterKey(Long memberId) {
+        return String.valueOf(memberId);
     }
 
     // 클라이언트에서 로그아웃 시 SSE종료된 이후 emitter 제어하는게 나을 것 같아서 추가
     public void disconnectOnLogout(Long memberId) {
-        String allKey = getEmitterKey(memberId, false);
-        String unreadKey = getEmitterKey(memberId, true);
-        SseEmitter allEmitter = emitters.remove(allKey);
-        SseEmitter unreadEmitter = emitters.remove(unreadKey);
-        if (allEmitter != null) {
+        String key = getEmitterKey(memberId);
+        SseEmitter emitter = emitters.remove(key);
+        if (emitter != null) {
             try {
-                allEmitter.complete();
-                log.info("Emitter for key: {} terminated on logout", allKey);
+                emitter.complete();
+                log.info("Emitter for key: {} terminated on logout", key);
             } catch (IllegalStateException e) {
-                log.debug("Emitter already completed for key: {}", allKey);
-            }
-        }
-        if (unreadEmitter != null) {
-            try {
-                unreadEmitter.complete();
-                log.info("Emitter for key: {} terminated on logout", unreadKey);
-            } catch (IllegalStateException e) {
-                log.debug("Emitter already completed for key: {}", unreadKey);
+                log.debug("Emitter already completed for key: {}", key);
             }
         }
     }
