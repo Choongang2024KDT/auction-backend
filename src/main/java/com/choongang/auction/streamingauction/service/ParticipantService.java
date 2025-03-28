@@ -2,6 +2,7 @@ package com.choongang.auction.streamingauction.service;
 
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.choongang.auction.streamingauction.domain.participant.dto.response.ParticipantDTO;
+import com.choongang.auction.streamingauction.domain.participant.dto.response.TopProductDTO;
 import com.choongang.auction.streamingauction.domain.participant.entity.Participant;
 import com.choongang.auction.streamingauction.domain.product.domain.entity.Product;
 import com.choongang.auction.streamingauction.repository.MemberRepository;
@@ -9,9 +10,12 @@ import com.choongang.auction.streamingauction.repository.ParticipantRepository;
 import com.choongang.auction.streamingauction.repository.ProductRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -199,5 +203,21 @@ public class ParticipantService {
         log.info("상품별 참가자 수 조회 완료: 상품ID={}, 참가자 수={}", productId, count);
 
         return count;
+    }
+
+    public List<TopProductDTO> getTopProductsByParticipantCount(int limit) {
+        Pageable pageable = PageRequest.of(0, limit);
+        List<Object[]> results = participantRepository.findTopProductsByParticipantCount(
+                List.of(Participant.ParticipantStatus.RESERVED, Participant.ParticipantStatus.PARTICIPATING),
+                pageable);
+
+        List<TopProductDTO> topProducts = new ArrayList<>();
+        for (Object[] result : results) {
+            Long productId = (Long) result[0];
+            Long count = ((Number) result[1]).longValue();
+            topProducts.add(new TopProductDTO(productId, count));
+        }
+
+        return topProducts;
     }
 }
