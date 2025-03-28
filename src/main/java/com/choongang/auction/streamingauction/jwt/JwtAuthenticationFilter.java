@@ -1,5 +1,6 @@
 package com.choongang.auction.streamingauction.jwt;
 
+import com.choongang.auction.streamingauction.jwt.entity.TokenUserInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -33,16 +34,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         // 사용자가 전달한 토큰을 가져와야 함.
         String token;
-        if (isApiRequest(request)) {
-            // 요청헤더에 토큰을 들고다니는 경우 - API요청
-            token = resolveTokenFromHeader(request);
-        } else {
-            // 쿠키에 토큰을 들고다니는 경우 - 라우팅 요청
+
+        // 임시 코드
+        String requestURI = request.getRequestURI();
+
+        // 로그인/로그아웃은 쿠키에서 토큰 가져오기
+        if (requestURI.startsWith("/api/auth/login") || requestURI.startsWith("/api/auth/logout")) {
             token = resolveTokenFromCookie(request);
+            log.info("token from cookie: {}", token);
+        } else {
+            token = resolveTokenFromHeader(request);
+            log.info("API token from header: {}", token);
         }
+
+
+        // 기존 코드
+//        if (isApiRequest(request)) {
+//            // 요청헤더에 토큰을 들고다니는 경우 - API요청
+//            log.info("요청헤더에 토큰을 들고다니는 경우 - API요청");
+//            token = resolveTokenFromHeader(request);
+//        } else {
+//            // 쿠키에 토큰을 들고다니는 경우 - 라우팅 요청
+//            log.info("쿠키에 토큰을 들고다니는 경우 - 라우팅 요청");
+//            token = resolveTokenFromCookie(request);
+//        }
+
 
         // 토큰 유효성 검증 및 토큰이 유효하다면 스프링에게 유효하다는 정보를 전달
         validateAndAuthenticate(token);
+
 
         // 다음 필터로 넘어가기
         filterChain.doFilter(request, response);
@@ -55,30 +75,35 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
      * @param token JWT 토큰 문자열
      */
     private void validateAndAuthenticate(String token) {
-
         log.debug("parsed token: {}", token);
 
         // 토큰이 존재하고, 유효성 검증에 통과하면 인증 처리
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
-            // 토큰이 유효하므로, 토큰에서 사용자 이름 추출
+            // 토큰에서 사용자 정보(username과 memberId) 추출
             String username = tokenProvider.getCurrentLoginUsername(token);
-            String name = tokenProvider.getCurrentUserName(token);
+            Long memberId = tokenProvider.getCurrentMemberId(token);
+            log.info("getCurrentMemberId: {}", memberId.toString());
 
+            // TokenUserInfo 객체 생성
+            TokenUserInfo tokenUserInfo = TokenUserInfo.builder()
+                    .userName(username)
+                    .memberId(memberId)
+                    .build();
+            log.info("tokenUserInfo: {} {}", tokenUserInfo.userName(), tokenUserInfo.memberId());
 
             // Spring Security에게 접근을 허용하라고 명령
             // Authentication 객체 생성 → SecurityContextHolder에 저장
-            Authentication authentication =
-                    /*
-                        첫번째 파라미터: 인증된 사용자의 이름이 저장 - 컨트롤러들이 빼서 사용할 수 있음
-                        두번째 파라미터: 비밀번호를 저장 (일반적으로 저장하지 않음)
-                        세번째 파라미터: 권한정보를 저장 (나중에 인가 처리시 사용)
-                     */
-                    new UsernamePasswordAuthenticationToken(username, null, new ArrayList<>());
+            Authentication authentication = new UsernamePasswordAuthenticationToken(
+                    tokenUserInfo, // 인증된 사용자 정보 객체
+                    null,
+                    new ArrayList<>()
+            );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
-            log.info("authentication success: username - {}", username);
+            log.info("authentication success: user - {}, memberId - {}", username, memberId);
         }
     }
+
 
 
 
@@ -109,6 +134,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     .orElse(null);
         }
 
+        log.info("resolveTokenFromCookie: no cookie found");
         return null;
     }
 

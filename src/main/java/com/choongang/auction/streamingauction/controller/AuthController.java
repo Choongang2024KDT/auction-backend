@@ -4,14 +4,20 @@ package com.choongang.auction.streamingauction.controller;
 import com.choongang.auction.streamingauction.domain.member.dto.request.LoginRequest;
 import com.choongang.auction.streamingauction.domain.member.dto.request.SignUpRequest;
 import com.choongang.auction.streamingauction.domain.member.dto.response.DuplicateCheckResponse;
+import com.choongang.auction.streamingauction.jwt.entity.TokenUserInfo;
 import com.choongang.auction.streamingauction.service.MemberService;
+import com.choongang.auction.streamingauction.service.SseEmitterService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.Authentication;
 
 import java.util.Map;
 
@@ -22,6 +28,7 @@ import java.util.Map;
 public class AuthController {
 
     private final MemberService memberService;
+    private final SseEmitterService sseEmitterService;
 
     // 회원가입 요청
     @PostMapping("/signup")
@@ -82,7 +89,11 @@ public class AuthController {
 
     // 로그아웃 처리 API
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletResponse response) {
+    public ResponseEntity<?> logout(HttpServletResponse response,
+                                    @AuthenticationPrincipal TokenUserInfo tokenUserInfo)
+    {
+        Long memberId = tokenUserInfo.memberId();
+        sseEmitterService.disconnectOnLogout(memberId);
 
         // 쿠키 무효화
         Cookie cookie = new Cookie("accessToken", null);
@@ -98,5 +109,7 @@ public class AuthController {
                 "message", "로그아웃이 처리되었습니다."
         ));
     }
+
+
 
 }

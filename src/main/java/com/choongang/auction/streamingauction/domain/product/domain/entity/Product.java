@@ -92,4 +92,11 @@ public class Product {
             this.categoryName = category.getCategoryType().name();
         }
     }
+    public void setAuction(Auction auction) {
+        this.auction = auction;
+        // 양방향 관계가 유지되도록 보장
+        if (auction != null && auction.getProduct() != this) {
+            auction.setProduct(this);
+        }
+    }
 }

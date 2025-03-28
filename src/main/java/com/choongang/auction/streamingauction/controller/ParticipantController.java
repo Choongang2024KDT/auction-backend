@@ -2,6 +2,7 @@ package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.participant.dto.response.ApiResponse;
 import com.choongang.auction.streamingauction.domain.participant.dto.response.ParticipantDTO;
+import com.choongang.auction.streamingauction.jwt.entity.TokenUserInfo;
 import com.choongang.auction.streamingauction.service.ParticipantService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,14 +24,19 @@ public class ParticipantController {
      * 경매 예약하기 API
      * 현재 로그인한 사용자가 상품을 예약
      */
+    /**
+     * 경매 예약하기 API
+     * 현재 로그인한 사용자가 상품을 예약
+     */
     @PostMapping("/reserve/{productId}")
     public ResponseEntity<ApiResponse<ParticipantDTO>> reserveAuction(
             @PathVariable Long productId,
-            @AuthenticationPrincipal String username) {
+            @AuthenticationPrincipal TokenUserInfo userInfo) {
 
         try {
-            log.info("경매 예약 API 호출: 상품ID={}, 사용자={}", productId, username);
-            ParticipantDTO participantDTO = participantService.reserveAuction(productId, username);
+            log.info("경매 예약 API 호출: 상품ID={}, 사용자명={}, 회원ID={}",
+                    productId, userInfo.userName(), userInfo.memberId());
+            ParticipantDTO participantDTO = participantService.reserveAuction(productId, userInfo.userName());
             return ResponseEntity.ok(ApiResponse.success("경매가 성공적으로 예약되었습니다.", participantDTO));
         } catch (Exception e) {
             log.error("경매 예약 실패: {}", e.getMessage(), e);
@@ -45,11 +51,11 @@ public class ParticipantController {
     @DeleteMapping("/cancel/{productId}")
     public ResponseEntity<ApiResponse<Void>> cancelReservation(
             @PathVariable Long productId,
-            @AuthenticationPrincipal String username) {
+            @AuthenticationPrincipal TokenUserInfo userInfo) {  // String username -> TokenUserInfo userInfo
 
         try {
-            log.info("경매 예약 취소 API 호출: 상품ID={}, 사용자={}", productId, username);
-            participantService.cancelReservation(productId, username);
+            log.info("경매 예약 취소 API 호출: 상품ID={}, 사용자={}", productId, userInfo);
+            participantService.cancelReservation(productId, userInfo.userName());  // username -> userInfo.userName()
             return ResponseEntity.ok(ApiResponse.success("경매 예약이 취소되었습니다.", null));
         } catch (Exception e) {
             log.error("경매 예약 취소 실패: {}", e.getMessage(), e);
@@ -59,11 +65,11 @@ public class ParticipantController {
 
     @GetMapping("/my-reservations")
     public ResponseEntity<ApiResponse<List<ParticipantDTO>>> getMyReservations(
-            @AuthenticationPrincipal String username) {
+            @AuthenticationPrincipal TokenUserInfo userInfo) {  // String username -> TokenUserInfo userInfo
 
         try {
-            log.info("내 예약 목록 조회 API 호출: 사용자={}", username);
-            List<ParticipantDTO> participants = participantService.getParticipantsByUsername(username);
+            log.info("내 예약 목록 조회 API 호출: 사용자={}", userInfo);
+            List<ParticipantDTO> participants = participantService.getParticipantsByUsername(userInfo.userName());  // username -> userInfo.userName()
             return ResponseEntity.ok(ApiResponse.success(participants));
         } catch (Exception e) {
             log.error("내 예약 목록 조회 실패: {}", e.getMessage(), e);
@@ -74,11 +80,11 @@ public class ParticipantController {
     @GetMapping("/check/{productId}")
     public ResponseEntity<ApiResponse<Boolean>> checkReservation(
             @PathVariable Long productId,
-            @AuthenticationPrincipal String username) {
+            @AuthenticationPrincipal TokenUserInfo userInfo) {  // String username -> TokenUserInfo userInfo
 
         try {
-            log.info("예약 여부 확인 API 호출: 상품ID={}, 사용자={}", productId, username);
-            boolean isReserved = participantService.isReserved(productId, username);
+            log.info("예약 여부 확인 API 호출: 상품ID={}, 사용자={}", productId, userInfo);
+            boolean isReserved = participantService.isReserved(productId, userInfo.userName());  // username -> userInfo.userName()
             return ResponseEntity.ok(ApiResponse.success(isReserved));
         } catch (Exception e) {
             log.error("예약 여부 확인 실패: {}", e.getMessage(), e);
