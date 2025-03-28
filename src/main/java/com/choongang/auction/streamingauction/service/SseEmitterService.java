@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+// 이상한 거 너무 많음 RTC 작업 이후 수정하기...
 @Service
 @Slf4j
 public class SseEmitterService {
