@@ -1,10 +1,12 @@
 package com.choongang.auction.streamingauction.repository;
 
 import com.choongang.auction.streamingauction.domain.participant.entity.Participant;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+
 
 import java.util.List;
 import java.util.Optional;
@@ -52,4 +54,14 @@ public interface ParticipantRepository extends JpaRepository<Participant, Long> 
 
     // 상태별 참가자 조회
     List<Participant> findByProduct_ProductIdAndStatus(Long productId, Participant.ParticipantStatus status);
+
+    // 참가자 수에 따라 제품을 정렬
+    @Query("SELECT p.product.productId as productId, COUNT(p) as participantCount " +
+            "FROM Participant p " +
+            "WHERE p.status IN :statuses " +
+            "GROUP BY p.product.productId " +
+            "ORDER BY participantCount DESC")
+    List<Object[]> findTopProductsByParticipantCount(
+            @Param("statuses") List<Participant.ParticipantStatus> statuses,
+            Pageable pageable);
 }

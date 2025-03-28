@@ -2,6 +2,7 @@ package com.choongang.auction.streamingauction.controller;
 
 import com.choongang.auction.streamingauction.domain.participant.dto.response.ApiResponse;
 import com.choongang.auction.streamingauction.domain.participant.dto.response.ParticipantDTO;
+import com.choongang.auction.streamingauction.domain.participant.dto.response.TopProductDTO;
 import com.choongang.auction.streamingauction.jwt.entity.TokenUserInfo;
 import com.choongang.auction.streamingauction.service.ParticipantService;
 import lombok.RequiredArgsConstructor;
@@ -124,5 +125,13 @@ public class ParticipantController {
             log.error("상품별 참가자 수 조회 실패: {}", e.getMessage(), e);
             return ResponseEntity.badRequest().body(ApiResponse.error(e.getMessage()));
         }
+    }
+
+    @GetMapping("/top-products")
+    public ResponseEntity<ApiResponse<List<TopProductDTO>>> getTopProductsByParticipantCount(
+            @RequestParam(defaultValue = "5") int limit) {
+
+        List<TopProductDTO> topProducts = participantService.getTopProductsByParticipantCount(limit);
+        return ResponseEntity.ok(ApiResponse.success(topProducts));
     }
 }
