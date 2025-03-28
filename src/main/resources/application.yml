@@ -1,5 +1,7 @@
 server:
   port: 8088
+  tomcat:
+    connection-timeout: 180000 # 180초 (클라이언트 연결 유지 시간 SSE는 장기 연결을 유지하므로 heartbeat 주기보다 길어야 함.)
 
 spring:
   sql:
@@ -12,7 +14,7 @@ spring:
       max-request-size: 10MB
   mvc:
     async:
-      request-timeout: 60000
+      request-timeout: 600000 # 10분 SSE는 비동기 요청이므로 SseEmitter 타임아웃과 일치시키거나 더 길게 설정.
   #  mail:
   #    host: smtp.naver.com
   #    port: 465
