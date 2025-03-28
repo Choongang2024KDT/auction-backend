@@ -155,20 +155,25 @@ public class AuctionService {
                     log.info("경매 종료됨. 상품 ID: {}, 종료 시간: {}", auctionRequestDto.productId(), auctionEntity.getEndTime());
 
                     Long sellerId = auctionEntity.getProduct().getMember().getId();
-                    Long winnerId = highestBid.getMember().getId();
+                    // 입찰이 있는 경우에만 TradeRecord 생성 및 알림 처리
+                    if (highestBid != null) {
+                        Long winnerId = highestBid.getMember().getId();
 
-                    TradeRecord tradeRecord = TradeRecord.builder()
-                            .itemName(auctionEntity.getProduct().getName())
-                            .amount(auctionEntity.getCurrentPrice())
-                            .seller(sellerId)
-                            .buyer(winnerId)
-                            .productId(auctionRequestDto.productId())
-                            .build();
+                        TradeRecord tradeRecord = TradeRecord.builder()
+                                .itemName(auctionEntity.getProduct().getName())
+                                .amount(auctionEntity.getCurrentPrice())
+                                .seller(sellerId)
+                                .buyer(winnerId)
+                                .productId(auctionRequestDto.productId())
+                                .build();
 
-                    tradeRecordRepository.save(tradeRecord);
-                    log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
+                        tradeRecordRepository.save(tradeRecord);
+                        log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
 
-                    notificationService.handleAuctionEnd(auctionRequestDto.productId(), sellerId, winnerId);
+                        notificationService.handleAuctionEnd(auctionRequestDto.productId(), sellerId, winnerId);
+                    } else {
+                        log.info("입찰 내역이 없어 거래 기록을 생성하지 않습니다. 상품 ID: {}", auctionRequestDto.productId());
+                    }
                 },
                 () -> {
                     throw new AuctionNotFoundException("경매가 존재하지 않습니다.");
