@@ -11,10 +11,7 @@ import com.choongang.auction.streamingauction.domain.product.domain.entity.Produ
 import com.choongang.auction.streamingauction.domain.product.mapper.ProductMapper;
 import com.choongang.auction.streamingauction.exception.AuctionNotFoundException;
 import com.choongang.auction.streamingauction.exception.ForbiddenOperationException;
-import com.choongang.auction.streamingauction.repository.AuctionRepository;
-import com.choongang.auction.streamingauction.repository.BidRepository;
-import com.choongang.auction.streamingauction.repository.ProductRepository;
-import com.choongang.auction.streamingauction.repository.TradeRecordRepository;
+import com.choongang.auction.streamingauction.repository.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -36,6 +33,7 @@ public class AuctionService {
     private final BidRepository bidRepository;
     private final TradeRecordRepository tradeRecordRepository;
     private final NotificationService notificationService;
+    private final CategoryRepository categoryRepository;
 
     //경매 생성
     public AuctionResponseDto createAuction(AuctionRequestDto auctionRequestDto) {
@@ -200,7 +198,9 @@ public class AuctionService {
         log.info("경매 종료됨. 상품 ID: {}, 종료 시간: {}", productId, foundAuction.getEndTime());
 
         Long sellerId = foundAuction.getProduct().getMember().getId();
+        log.info("입찰자의 입찰에 의한 경매 종료 sellerId: {}", sellerId);
         Long winnerId = highestBid.getMember().getId();
+        log.info("입찰자의 입찰에 의한 경매 종료 winnerId: {}", winnerId);
 
         TradeRecord tradeRecord = TradeRecord.builder()
                 .itemName(foundAuction.getProduct().getName())
@@ -210,7 +210,13 @@ public class AuctionService {
                 .productId(productId)
                 .build();
 
-        tradeRecordRepository.save(tradeRecord);
+        try {
+            tradeRecordRepository.save(tradeRecord);
+            log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
+        } catch (Exception e) {
+            log.info("TradeRecord 저장 실패. Trade ID: {}", tradeRecord.getTradeId());
+        }
+
         log.info("TradeRecord 저장 완료. Trade ID: {}", tradeRecord.getTradeId());
 
         notificationService.handleAuctionEnd(productId, sellerId, winnerId);
