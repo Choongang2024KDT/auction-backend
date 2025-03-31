@@ -254,12 +254,13 @@ public class GlobalExceptionHandler {
 
     // AuthorizationDeniedException 처리
     @ExceptionHandler(org.springframework.security.authorization.AuthorizationDeniedException.class)
-    public ResponseEntity<ErrorResponse> handleAuthorizationDeniedException(
+    public void handleAuthorizationDeniedException(
             org.springframework.security.authorization.AuthorizationDeniedException e,
-            HttpServletRequest request) {
+            HttpServletRequest request,
+            HttpServletResponse response) throws IOException {
         log.info("권한 거부 오류 발생: {}", e.getMessage(), e);
 
-        ErrorResponse response = ErrorResponse.builder()
+        ErrorResponse errorResponse = ErrorResponse.builder()
                 .timestamp(LocalDateTime.now())
                 .status(HttpStatus.FORBIDDEN.value())
                 .error(HttpStatus.FORBIDDEN.name())
@@ -267,8 +268,26 @@ public class GlobalExceptionHandler {
                 .path(request.getRequestURI())
                 .build();
 
-        return ResponseEntity
-                .status(HttpStatus.FORBIDDEN)
-                .body(response);
+        if (MediaType.TEXT_EVENT_STREAM_VALUE.equals(request.getHeader("Accept"))) {
+            // SSE 요청인 경우
+            if (!response.isCommitted()) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setContentType(MediaType.TEXT_EVENT_STREAM_VALUE);
+                response.getWriter().write("data: " + objectMapper.writeValueAsString(errorResponse) + "\n\n");
+                response.getWriter().flush();
+            } else {
+                log.warn("Response already committed for SSE request, cannot send error: {}", request.getRequestURI());
+            }
+        } else {
+            // 일반 요청인 경우
+            if (!response.isCommitted()) {
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.getWriter().write(objectMapper.writeValueAsString(errorResponse));
+                response.getWriter().flush();
+            } else {
+                log.warn("Response already committed, cannot send error: {}", request.getRequestURI());
+            }
+        }
     }
 }
