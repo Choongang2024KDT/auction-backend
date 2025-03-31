@@ -85,6 +85,7 @@ public class NotificationService {
                 .link(notification.getLink())
                 .isRead(notification.isRead())
                 .safeNumber(notification.getSafeNumber())
+                .createdAt(notification.getCreatedAt().toString())
                 .build();
     }
 }
