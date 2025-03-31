@@ -23,7 +23,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/ws-connect")  // 웹소켓 연결 엔드포인트
-                .setAllowedOrigins("http://goose123.shop.s3-website.ap-northeast-2.amazonaws.com") //S3주소
+                .setAllowedOrigins("https://goose123.shop") //S3주소
 //                .setAllowedOrigins("http://localhost:5173") // 로컬 개발 환경
                 .withSockJS();  // SockJS 지원 (구형 브라우저 대응)
     }
