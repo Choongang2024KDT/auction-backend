@@ -19,7 +19,7 @@ public class CorsConfig {
         configuration.setAllowedOrigins(Arrays.asList("https://goose123.shop"));  // 예: "https://www.example.com"
 
         // 허용할 HTTP 메서드 설정
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        configuration.setAllowedMethods(Arrays.asList("*"));
 
         // 허용할 헤더 설정
         configuration.setAllowedHeaders(Arrays.asList("*"));
