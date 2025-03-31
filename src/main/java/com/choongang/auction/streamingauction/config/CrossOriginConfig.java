@@ -12,7 +12,8 @@ public class CrossOriginConfig implements WebMvcConfigurer {
             "http://localhost:3000",
             "http://localhost:5173",
             "http://localhost:5174",
-            "http://final-project-react-app-bucket-seong.s3-website.ap-northeast-2.amazonaws.com"
+            "http://goose123.shop.s3-website.ap-northeast-2.amazonaws.com",
+            "http://goose123.shop"
     };
 
     @Override
