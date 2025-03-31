@@ -5,9 +5,11 @@ import com.choongang.auction.streamingauction.domain.dto.requestDto.BidRequestDt
 import com.choongang.auction.streamingauction.domain.dto.responseDto.BidResponseDto;
 import com.choongang.auction.streamingauction.domain.entity.Auction;
 import com.choongang.auction.streamingauction.domain.entity.Bid;
+import com.choongang.auction.streamingauction.domain.entity.Status;
 import com.choongang.auction.streamingauction.domain.member.dto.response.MemberDTO;
 import com.choongang.auction.streamingauction.domain.member.entity.Member;
 import com.choongang.auction.streamingauction.domain.member.mapper.MemberMapper;
+import com.choongang.auction.streamingauction.exception.AuctionCompletedException;
 import com.choongang.auction.streamingauction.repository.AuctionRepository;
 import com.choongang.auction.streamingauction.repository.BidRepository;
 import com.choongang.auction.streamingauction.repository.MemberRepository;
@@ -33,10 +35,15 @@ public class BidService {
     public BidResponseDto saveAndGetMaxBid(BidRequestDto bidRequestDto) {
 
         Auction foundAuction = auctionRepository.findById(bidRequestDto.auctionId()).orElseThrow(()-> new RuntimeException("Auction not found"));
+        if (foundAuction.getStatus().equals(Status.COMPLETED)) {
+            throw new AuctionCompletedException("Auction is completed, can not bid"); // 종료된 경매일 땐 더 이상의 입찰 중지
+        }
+
         Optional<Member> foundMember = memberRepository.findById(bidRequestDto.memberId()); //회원 조회
         if (foundMember.isEmpty()) {
             throw new RuntimeException("Member not found"); // 멤버가 없으면 예외 처리
         }
+
         Member member = foundMember.get(); //회원 정보
 
         // 입찰 entity 생성

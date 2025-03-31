@@ -150,6 +150,28 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
+    // 경매 완료 상태에서 예외 처리
+    @ExceptionHandler(AuctionCompletedException.class)
+    public ResponseEntity<ErrorResponse> handleAuctionCompletedException(
+            AuctionCompletedException e, HttpServletRequest request) {
+
+        log.error("AuctionCompletedException occurred: {}", e.getMessage(), e);
+
+        ErrorResponse response = ErrorResponse.builder()
+                .timestamp(LocalDateTime.now())
+                .status(e.getStatus().value()) // 400 Bad Request
+                .error(e.getStatus().name())
+                .message(e.getMessage())
+                .path(request.getRequestURI())
+                .build();
+
+        return ResponseEntity
+                .status(e.getStatus())
+                .body(response);
+    }
+
+
+
     @ExceptionHandler(AsyncRequestTimeoutException.class)
     public void handleAsyncRequestTimeoutException(
             AsyncRequestTimeoutException ex,
