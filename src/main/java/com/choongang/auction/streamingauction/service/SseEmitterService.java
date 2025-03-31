@@ -26,7 +26,7 @@ public class SseEmitterService {
     // heartbeat 주기 설정
     @PostConstruct
     public void init() {
-        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 20, TimeUnit.SECONDS);
+        scheduler.scheduleAtFixedRate(this::sendHeartbeats, 0, 30, TimeUnit.SECONDS);
     }
 
     public SseEmitter createEmitter(Long memberId) {
@@ -42,7 +42,7 @@ public class SseEmitterService {
         }
 
         // 새 emitter
-        SseEmitter emitter = new SseEmitter(600_000L); // 타임아웃 10분
+        SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 타임아웃 60분
         emitters.put(key, emitter);
         log.info("Created emitter for key: {}, Current emitters map: {}", key, emitters.keySet());
 
