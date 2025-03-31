@@ -63,8 +63,8 @@ public class NotificationService {
 
         notificationRepository.saveAll(List.of(sellerNotification, winnerNotification));
 
-        sseEmitterService.sendNotification(sellerId, sellerNotification);
-        sseEmitterService.sendNotification(winnerId, winnerNotification);
+        sseEmitterService.sendToEmitter(sellerId, sellerNotification);
+        sseEmitterService.sendToEmitter(winnerId, winnerNotification);
     }
 
     private Notification createNotification(Member member, String message, String link, String safeNumber) {

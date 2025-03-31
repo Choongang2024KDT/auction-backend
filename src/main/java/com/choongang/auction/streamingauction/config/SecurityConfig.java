@@ -40,7 +40,6 @@ public class SecurityConfig {
                                 // 아래로 갈 수록 덜 구체적인 규칙
 
                                 // 인증이 필요한 요청들
-                                .requestMatchers("/api/auth/logout").authenticated()  // 로그아웃은 인증 필요
                                 .requestMatchers("/api/auction/**").authenticated()
                                 .requestMatchers("/api/chat/**").authenticated()
                                 .requestMatchers("/api/notifications/**").authenticated()
@@ -48,7 +47,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.DELETE, "/api/product/{id}").hasRole("ADMIN") // 관리자만 상품 삭제 가능. hasRole() 메서드는 ROLE_ 접두어를 자동으로 추가
 
                                 // 인증 없이 허용할 요청들
-                                .requestMatchers("/api/auth/**").permitAll() // 로그아웃 제외 나머지
+                                .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/product/{id}").permitAll()   // 특정 상품 조회
                                 .requestMatchers("/api/product/all").permitAll()   // 전체 상품 조회
                                 .requestMatchers("/api/product/category/**").permitAll() // 카테고리별 조회
@@ -64,13 +63,8 @@ public class SecurityConfig {
                 // 그런데 403은 인가차단이지 인증차단코드가 아님, 인증차단은 401로 해야 적합함
                 .exceptionHandling(ex ->
                     ex.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED))
-                )
-
-                // SSE를 위한 비동기 요청 설정
-                .requestCache(cache -> cache.disable()) // 캐시 비활성화로 재요청 문제 방지
-                .headers(headers -> headers
-                        .cacheControl(cache -> cache.disable()) // 캐시 제어 비활성화
                 );
+
 
         return http.build();
     }
