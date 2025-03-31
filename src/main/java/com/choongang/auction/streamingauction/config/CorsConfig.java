@@ -22,7 +22,7 @@ public class CorsConfig {
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
 
         // 허용할 헤더 설정
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type"));
+        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "cache-control"));
 
         // 자격 증명(Cookie)을 허용하려면 true로 설정
         configuration.setAllowCredentials(true);
