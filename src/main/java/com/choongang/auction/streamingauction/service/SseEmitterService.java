@@ -42,7 +42,7 @@ public class SseEmitterService {
         }
 
         // 새 emitter
-        SseEmitter emitter = new SseEmitter(3_600_000L); // 타임아웃 1시간
+        SseEmitter emitter = new SseEmitter(600_000L); // 타임아웃 10분
         emitters.put(key, emitter);
         log.info("Created emitter for key: {}, Current emitters map: {}", key, emitters.keySet());
 
