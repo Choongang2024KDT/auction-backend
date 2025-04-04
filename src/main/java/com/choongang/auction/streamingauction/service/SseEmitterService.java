@@ -10,8 +10,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.*;
 
-
-// 이상한 거 너무 많음 RTC 작업 이후 수정하기...
 @Service
 @Slf4j
 public class SseEmitterService {
@@ -22,8 +20,7 @@ public class SseEmitterService {
         SseEmitter emitter = new SseEmitter(60 * 60 * 1000L); // 타임아웃 60분
         String key = getEmitterKey(memberId);
         emitters.put(key, emitter);
-
-        log.info("Created emitter for key: {}, Current emitters map: {}", key, emitters.keySet());
+        log.debug("Created emitter for key: {}, Current emitters map: {}", key, emitters.keySet());
 
         // 초기 연결 확인용 이벤트
         try {
@@ -34,44 +31,19 @@ public class SseEmitterService {
             emitter.completeWithError(e);
         }
 
-        // 주기적인 하트비트: 30초마다
-//        ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
-//        scheduler.scheduleAtFixedRate(() -> {
-//            try {
-//                if (emitters.containsKey(key)) { // emitter가 살아있는지 확인
-//                    log.info("Sending heartbeat for memberId: {}", memberId);
-//                    emitter.send(SseEmitter.event().name("heartbeat").data("ping"));
-//                } else {
-//                    log.warn("Emitter already removed for memberId: {}", memberId);
-//                    scheduler.shutdown(); // emitter 없으면 스케줄러 종료
-//                }
-//            } catch (IOException e) {
-//                log.warn("Failed to send heartbeat for memberId: {}", memberId, e);
-//                emitter.completeWithError(e);
-//                emitters.remove(key);
-//                scheduler.shutdown(); // 스케줄러는 중단되지 않고 계속 실행하면 메모리 누수나 불필요한 로그를 유발
-//            }
-//        }, 0, 30, TimeUnit.SECONDS);
-
         // 클린업 처리
         // SseEmitter 객체가 더 이상 필요 없어질 때(연결이 끝나거나 문제가 생길 때) 서버에서 리소스를 정리하는 코드
         emitter.onCompletion(() -> {
-            if (emitters.get(key) == emitter) { // 현재 emitter가 나인지 확인
-                emitters.remove(key);
-                log.info("Emitter completed for key: {}", key);
-            }
+            emitters.remove(key);
+            log.info("Emitter completed for key: {}", key);
         });
         emitter.onTimeout(() -> {
-            if (emitters.get(key) == emitter) {
-                emitters.remove(key);
-                log.debug("Emitter timed out for key: {}", key);
-            }
+            emitter.complete();
+            log.debug("Emitter timed out for key: {}", key);
         });
         emitter.onError((e) -> {
-            if (emitters.get(key) == emitter) {
-                emitters.remove(key);
-                log.error("Emitter error for key: {}", key, e);
-            }
+            emitters.remove(key);
+            log.error("Emitter error for key: {}", key, e);
         });
 
         return emitter;

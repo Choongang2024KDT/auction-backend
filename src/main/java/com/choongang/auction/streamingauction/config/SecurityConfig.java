@@ -39,14 +39,13 @@ public class SecurityConfig {
                                 // 위에부터 검사하므로 구체적인걸 위에
                                 // 아래로 갈 수록 덜 구체적인 규칙
 
-                                // 인증이 필요한 요청들
                                 .requestMatchers("/api/auction/**").authenticated()
                                 .requestMatchers("/api/chat/**").authenticated()
+                                .requestMatchers("/api/notifications/stream/new").permitAll()
                                 .requestMatchers("/api/notifications/**").authenticated()
                                 .requestMatchers("/api/tradeRecord/**").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/api/product/{id}").hasRole("ADMIN") // 관리자만 상품 삭제 가능. hasRole() 메서드는 ROLE_ 접두어를 자동으로 추가
 
-                                // 인증 없이 허용할 요청들
                                 .requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers(HttpMethod.GET, "/api/product/{id}").permitAll()   // 특정 상품 조회
                                 .requestMatchers("/api/product/all").permitAll()   // 전체 상품 조회
