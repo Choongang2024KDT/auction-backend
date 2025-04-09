@@ -42,6 +42,7 @@ public class SecurityConfig {
                         auth
                                 .requestMatchers("/api/auction/**").authenticated()
                                 .requestMatchers("/api/chat/**").authenticated()
+                                .requestMatchers("/api/notifications/stream/new").permitAll()
                                 .requestMatchers("/api/notifications/**").authenticated()
                                 .requestMatchers("/api/tradeRecord/**").authenticated()
                                 .requestMatchers(HttpMethod.DELETE, "/api/product/{id}").hasRole("ADMIN") // 관리자만 상품 삭제 가능.
